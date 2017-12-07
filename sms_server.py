@@ -10,7 +10,12 @@ import string
 
 preset_speak = ["Come to the Holiday Happening!", "Come take a photo with me at the Holiday Happening!",
                 "Did you know that the Holiday Happening is this next Monday at 3PM in the library?",
-                "I am very sad inside"]
+                "I am very sad inside", "Nothing is real.", "Plus one good timing", "Love equals quantum entanglement", 
+                "Come to the Holiday Happening for cookies, crafts, friendship, and more", 
+                "Class of 2020 was a mistake", "Keenan Zucker is hot", "Every one of us is a lab rat but we are also the observer",
+                "Numbers matter dates matter numbers are not all the same they are very unique", 
+                "Thanks everyone for coming I'll be here all week I also do birthday parties and bar mitzvahs",
+                "Come give me a hug", "What is your name", "Long live poop monkey"]
 
 pf = ProfanityFilter()
 
