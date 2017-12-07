@@ -20,6 +20,7 @@ while True:
 	    WaitTimeSeconds=0
 	)
 
+
 	try:
 		print "Reading message..."
 		message = response['Messages'][0]
