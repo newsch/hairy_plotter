@@ -28,7 +28,8 @@ def sms():
         parse_command(number, message_body)
         return send_response("Come to the Holiday Happening this coming Monday (Dec. 11) at 3PM!")
     else:
-        return send_response("")
+        print "DIRTY DIRTY DIRTY "
+        return send_response("Hey! That's not very nice. Keep it clean, kids!")
 
 def send_response(resp_str):
     resp = MessagingResponse()
@@ -38,7 +39,7 @@ def send_response(resp_str):
 
 def parse_command(number, command):
     command_list = command.lower().split()
-    if command_list[0] == 'say' 
+    if command_list[0] == 'say': 
         queue_message(" ".join(command_list[1:])) 
     elif command_list[0] == 'speak':
         queue_message(random.choice(preset_speak))
