@@ -6,6 +6,7 @@ import string
 import boto3
 import uuid
 import random
+import string
 
 preset_speak = ["Come to the Holiday Happening!", "Come take a photo with me at the Holiday Happening!",
                 "Did you know that the Holiday Happening is this next Monday at 3PM in the library?",
@@ -38,6 +39,10 @@ def send_response(resp_str):
 
 
 def parse_command(number, command):
+    command = "".join(l for l in command if l not in string.punctuation)
+    command = "".join([i if ord(i) < 128 else '' for i in command])
+
+    print command
     command_list = command.lower().split()
     if command_list[0] == 'say': 
         queue_message(" ".join(command_list[1:])) 

@@ -32,7 +32,9 @@ while True:
 		    ReceiptHandle=receipt_handle
 		)
 
-		os.system("say {}".format(message['Body']))
+		print message
+		
+		os.system("say '{}'".format(message['Body']))
 		counter = 0
 
 		print('Received and deleted message: %s' % message)
