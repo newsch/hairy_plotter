@@ -33,8 +33,8 @@ while True:
 		)
 
 		print message
-		
-		os.system("say '{}'".format(message['Body']))
+
+		os.system("espeak '{}'".format(message['Body']))
 		counter = 0
 
 		print('Received and deleted message: %s' % message)
