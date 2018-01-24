@@ -51,7 +51,11 @@ def create_subscription_queue(topic):
             print('Continuing without subscriptions', file=sys.stderr)
 
     while True:
-        yield json.loads(messages.get().payload)
+        payload = json.loads(messages.get().payload)
+        # FIXME kludge: the server should be doing this
+        payload = {k: v[0] if isinstance(v, list) and len(v) == 1 else v
+                   for k, v in payload.items()}
+        yield payload
 
 
 @click.command()
@@ -60,8 +64,8 @@ def main(topic):
     queue = create_subscription_queue(topic)
     print('Waiting for messages')
     logger.setLevel(logging.INFO)
-    for message in queue:
-        print(message)
+    for payload in queue:
+        print(payload)
 
 if __name__ == '__main__':
     main()
