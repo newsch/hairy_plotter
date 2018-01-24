@@ -1,12 +1,20 @@
 # Bear-as-a-Service
 
+<iframe src="https://player.vimeo.com/video/248514938?color=ff0179&title=0&byline=0&portrait=0" width="400" height="300" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
+
+- A Holiday Happening 
+- [A Life Size Brown Cardboard Bear](https://www.amazon.com/Brown-Bear-Advanced-Graphics-Cardboard/dp/B00B03DT0O) 
+- Keenan Zucker
+- Patrick Huston  
+
 ## Running the Example
 
 This requires a running bear server.
 
 1. Follow the setup instructions below.
 2. Run `python3 examples/sms_bear_gateway.py`
-4. Send text
+3. Send text
 
 ## Running the Bear Speaker
 
