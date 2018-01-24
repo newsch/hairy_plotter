@@ -4,6 +4,7 @@ import random
 import string
 import sys
 
+import click
 from twilio.rest import Client
 from profanityfilter import ProfanityFilter
 
@@ -40,23 +41,23 @@ CANNED_SPEECHES = [
 pf = ProfanityFilter()
 
 
-def process_message(message):
+def process_message(message, reply_text=None):
     from_number = message['From']
     message_body = message['Body']
-    print(message, from_number, message_body)
 
     if pf.is_clean(message_body):
         speech = parse_command(message_body)
         if speech:
             publish(SEND_TOPIC, message=speech)
-        response_text = REPLY_TEXT
+        response_text = reply_text
     else:
         response_text = UNCLEAN_MESSAGE_REPLY_TEXT
-    client = Client(ACCOUNT_SID, AUTH_TOKEN)
-    client.api.account.messages.create(
-        to=from_number,  # sic
-        from_=PHONE_NUMBER,
-        body=response_text)
+    if response_text:
+        client = Client(ACCOUNT_SID, AUTH_TOKEN)
+        client.api.account.messages.create(
+            to=from_number,  # sic
+            from_=PHONE_NUMBER,
+            body=response_text)
 
 
 def parse_command(command):
@@ -73,12 +74,14 @@ def parse_command(command):
         return command.lower()
 
 
-def main():
+@click.command()
+@click.option('--reply-text', default='Bear has spoken')
+def main(reply_text=None):
     logger.setLevel(logging.INFO)
     topic = 'incoming-sms-' + PHONE_NUMBER.strip('+')
     logger.info('Waiting for messages on {}'.format(topic))
     for payload in create_subscription_queue(topic):
-        process_message(payload)
+        process_message(payload, reply_text=reply_text)
 
 
 if __name__ == '__main__':
