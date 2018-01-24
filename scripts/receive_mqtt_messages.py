@@ -61,10 +61,9 @@ def create_subscription_queue(topic):
 @click.command()
 @click.option('--topic', default='speak')
 def main(topic):
-    queue = create_subscription_queue(topic)
-    print('Waiting for messages')
     logger.setLevel(logging.INFO)
-    for payload in queue:
+    logger.info('Waiting for messages on {}'.format(topic))
+    for payload in create_subscription_queue(topic):
         print(payload)
 
 if __name__ == '__main__':

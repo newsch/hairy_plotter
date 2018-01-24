@@ -1,3 +1,8 @@
+paho-mqtt~=1.3.1
+
+# Twilio gateway
 Flask~=0.12.2
 twilio~=6.10.1
-paho-mqtt~=1.3.1
+
+# Example gateway
+profanityfilter~=2.0.3

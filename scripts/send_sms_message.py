@@ -22,9 +22,7 @@ PHONE_NUMBER_EXAMPLE = '+161723351010'
 @click.argument('message_body', default='hello')
 def send_sms_message(to_number, message_body):
     assert PHONE_NUMBER_RE.match(to_number), 'Phone number must match ' + PHONE_NUMBER_EXAMPLE
-
     client = Client(ACCOUNT_SID, AUTH_TOKEN)
-
     client.api.account.messages.create(
         to=to_number,
         from_=PHONE_NUMBER,

@@ -1,7 +1,16 @@
+## Running the Example
+
+This requires a running bear server.
+
+1. Follow the setup instructions below.
+2. Run `python3 examples/sms_bear_gateway.py`
+4. Send text
+
 ## Running the Bear Speaker
 
 1. Follow the install instructions below, as appropriate for your machine. You can skip the Twilio configuration variables in `.envrc`—Bear doesn't need these.
 2. Run `python3 scripts/tts_worker.py`
+3. Send a message to the bear. You can use python3 scripts/send_mqtt_message.py "Happy happy" to test this.
 
 ## Install Instructions
 
