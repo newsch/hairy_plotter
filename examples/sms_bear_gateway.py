@@ -24,7 +24,10 @@ assert ACCOUNT_SID, 'Error: the TWILIO_ACCOUNT_SID is not set'
 assert AUTH_TOKEN, 'Error: the TWILIO_AUTH_TOKEN is not set'
 assert PHONE_NUMBER, 'Error: the TWILIO_PHONE_NUMBER is not set'
 
-PRESET_SPEECHES = [
+REPLY_TEXT = os.getenv('BEAR_REPLY_TEXT') or "The bear has received your message."
+UNCLEAN_MESSAGE_REPLY_TEXT = "Hey! That's not very nice. Keep it clean, kids!"
+
+CANNED_SPEECHES = [
     "Come to the Holiday Happening!", "Come take a photo with me at the Holiday Happening!",
     "Did you know that the Holiday Happening is this next Monday at 3PM in the library?",
     "I am very sad inside", "Nothing is real.", "Plus one good timing", "Love equals quantum entanglement",
@@ -46,9 +49,9 @@ def process_message(message):
         speech = parse_command(message_body)
         if speech:
             publish(SEND_TOPIC, message=speech)
-        response_text = "Come to the Holiday Happening this coming Monday (Dec. 11) at 3PM!"
+        response_text = REPLY_TEXT
     else:
-        response_text = "Hey! That's not very nice. Keep it clean, kids!"
+        response_text = UNCLEAN_MESSAGE_REPLY_TEXT
     client = Client(ACCOUNT_SID, AUTH_TOKEN)
     client.api.account.messages.create(
         to=from_number,  # sic
@@ -60,11 +63,14 @@ def parse_command(command):
     command = ''.join(c for c in command
                       if ord(c) < 128 and c not in string.punctuation)
 
-    command_list = command.lower().split(maxsplit=2)
-    if command_list[0] == 'say':
-        return ' '.join(command_list[1:])
-    elif command_list[0] == 'speak':
-        return random.choice(PRESET_SPEECHES)
+    words = command.lower().split(maxsplit=2)
+    if words[0] in ('speak', 'say'):
+        if words[1:]:
+            return ' '.join(words[1:])
+        else:
+            return random.choice(CANNED_SPEECHES)
+    else:
+        return command.lower()
 
 
 def main():
