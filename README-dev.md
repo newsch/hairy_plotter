@@ -25,7 +25,11 @@ Optionally install [direnv](https://direnv.net/)
 
 Send a test message (replace the number below by your own phone number):
 
-`python3 scripts/send_sms.py +16175551010'
+`python3 scripts/send_sms_message.py +16175551010'
+
+Send a test message to the bear:
+
+`python3 scripts/send_mqtt_message.py "Happy happy"'
 
 ## Optional
 
