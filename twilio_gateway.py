@@ -23,7 +23,8 @@ app = Flask(__name__)
 @app.route('/sms_webhook', methods=['POST'])
 def sms_webhook():
     topic = request.form['To'].replace('+', 'incoming-sms-')
-    payload = dict(request.form)
+    payload = {k: v[0] if isinstance(v, list) and len(v) == 1 else v
+               for k, v in request.form.items()}
     logger.info('publish {} to {}'.format(payload, topic))
     publish(topic, **request.form)
 
@@ -33,5 +34,5 @@ def sms_webhook():
     return str(resp)
 
 logger.setLevel(logging.INFO)
-logger.info('Listening on {}'.format(PORT))
+logger.info('Listening on {} DEBUG={}'.format(PORT, DEBUG))
 app.run(host=HOST, port=PORT, debug=DEBUG)
