@@ -51,11 +51,12 @@ def create_subscription_queue(topic):
             print('Continuing without subscriptions', file=sys.stderr)
 
     while True:
-        yield messages.get()
+        yield json.loads(messages.get().payload)
 
 
-@click.argument('topic', default='speak')
-def main(topic='speak'):
+@click.command()
+@click.option('--topic', default='speak')
+def main(topic):
     queue = create_subscription_queue(topic)
     print('Waiting for messages')
     logger.setLevel(logging.INFO)

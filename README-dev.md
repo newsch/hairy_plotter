@@ -1,3 +1,8 @@
+## Running the Bear Speaker
+
+1. Follow the install instructions below, as appropriate for your machine. You can skip the Twilio configuration variables in `.envrc`—Bear doesn't need these.
+2. Run `python3 scripts/tts_worker.py`
+
 ## Install Instructions
 
 ### macOS
