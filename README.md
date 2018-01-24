@@ -1,6 +1,6 @@
 # Bear-as-a-Service
 
-<iframe src="https://player.vimeo.com/video/248514938?color=ff0179&title=0&byline=0&portrait=0" width="400" height="300" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+[![IMAGE ALT TEXT HERE](docs/images/bear-vimeo.jpg)](https://vimeo.com/248514938)
 
 
 - A Holiday Happening 
