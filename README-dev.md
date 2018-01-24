@@ -36,6 +36,13 @@ Send a test message to the bear:
 
 `python3 scripts/send_mqtt_message.py "Happy happy"'
 
+## Configure Twilio Gateway
+
+1. Go to the Twilio phone number configuration page, e.g. https://www.twilio.com/console/phone-numbers/{sid}.
+2. Under "Messaging: A Message Comes In", set the webhook to the server URL followed by the `/sms_webhook` path, e.g. `https://c115d7a2.ngrok.io/sms_webhook`.
+
 ## Optional
 
 To use a local RabbitMQ server: `brew install rabbitmq`.
+
+TODO: configuration instructions.
