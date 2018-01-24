@@ -1,0 +1,9 @@
+# Copy this file to .envrc, and edit your assigned phone number and credentials
+# into it.
+# Each time you open a new terminal, run `source .envrc`.
+# Pro Tip: Automate this by installing direnv https://direnv.net/.
+
+export MQTT_URL='mqtt://username:password@termite.rmq.cloudamqp.com:1883/username'
+export TWILIO_ACCOUNT_SID='...'
+export TWILIO_AUTH_TOKEN='...'
+export TWILIO_PHONE_NUMBER='+16175551010'
