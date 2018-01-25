@@ -3,10 +3,10 @@
 [![IMAGE ALT TEXT HERE](docs/images/bear-vimeo.jpg)](https://vimeo.com/248514938)
 
 
-- A Holiday Happening 
-- [A Life Size Brown Cardboard Bear](https://www.amazon.com/Brown-Bear-Advanced-Graphics-Cardboard/dp/B00B03DT0O) 
+- A Holiday Happening
+- [A Life Size Brown Cardboard Bear](https://www.amazon.com/Brown-Bear-Advanced-Graphics-Cardboard/dp/B00B03DT0O)
 - Keenan Zucker
-- Patrick Huston  
+- Patrick Huston
 
 ## Running the Example
 
@@ -16,36 +16,36 @@ This requires a running bear server.
 2. Run `python3 examples/sms_bear_gateway.py`
 3. Send text
 
-## Running the Bear Speaker
-
-1. Follow the install instructions below, as appropriate for your machine. You can skip the Twilio configuration variables in `.envrc`—Bear doesn't need these.
-2. Run `python3 scripts/tts_worker.py`
-3. Send a message to the bear. You can use python3 scripts/send_mqtt_message.py "Happy happy" to test this.
-
 ## Install Instructions
 
-### macOS
-
-Make sure you have a running python3.6.
-Earlier versions might work too, but haven't been tested.
-
-Easiest to install [Homebrew](https://brew.sh).
-
-`brew install espeak`
+Make sure you have a running python 3.6. Earlier versions might work too, but
+haven't been tested.
 
 ### macOS and Linux
 
 Copy `envrc.template`: `cp envrc.template .envrc`
 
-Edit your credentials and phone number into `.envrc`.
+Replace the strings in `.envrc` by your credentials and phone number.
 
 `source .envrc`
 
 Optionally install [direnv](https://direnv.net/)
 
-### All
+Now continue with the "All Platforms" instructions.
 
-`pip install -r requirements.txt`
+### Windows
+
+On Windows, set an environment variable from the command line using:
+
+`setx MQTT_URL mqtt://…`
+
+Repeat for each variable in `envrc.template`.
+
+This adds entries to the Windows registry. You only need to do this once.
+
+### All Platforms
+
+`pip3 install -r requirements.txt`
 
 Send a test message (replace the number below by your own phone number):
 
@@ -55,20 +55,11 @@ Send a test message to the bear:
 
 `python3 scripts/send_mqtt_message.py "Happy happy"'
 
-## Configure Twilio Gateway
-
-1. Go to the Twilio phone number configuration page, e.g. https://www.twilio.com/console/phone-numbers/{sid}.
-2. Under "Messaging: A Message Comes In", set the webhook to the server URL followed by the `/sms_webhook` path, e.g. `https://c115d7a2.ngrok.io/sms_webhook`.
-
-## Optional
-
-To use a local RabbitMQ server: `brew install rabbitmq`.
-
-TODO: configuration instructions.
-
 ## Acknowledgements
 
-Bear-as-a-Service was adapted from Patrick Huston's Holiday Bear,
-introduced at the Olin College December 2017 Holiday Party.
+Bear-as-a-Service was adapted from Patrick Huston's Holiday Bear, introduced at
+the Olin College December 2017 Holiday Party.
 
 ## LICENSE
+
+MIT
