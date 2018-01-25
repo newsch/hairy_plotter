@@ -14,10 +14,16 @@ logger = logging.getLogger('messages')
 
 HOST = '0.0.0.0' if 'PORT' in os.environ else '127.0.0.1'
 PORT = int(os.environ.get('PORT', 5000))
-DEBUG = 'PORT' not in os.environ
+FLASK_DEBUG = os.environ.get('FLASK_DEBUG') or 'PORT' not in os.environ
 RESPONSE_TEXT = os.environ.get('RESPONSE_TEXT')
+GITHUB_URL = 'https://github.com/olinlibrary/bear-as-a-service'
 
 app = Flask(__name__)
+
+
+@app.route('/')
+def home():
+    return f'The server is running. <a href="{GITHUB_URL}">More…</a>'
 
 
 @app.route('/sms_webhook', methods=['POST'])
@@ -29,9 +35,9 @@ def sms_webhook():
 
     resp = MessagingResponse()
     if RESPONSE_TEXT:
-        msg = resp.message(RESPONSE_TEXT)
+        resp.message(RESPONSE_TEXT)
     return str(resp)
 
 logger.setLevel(logging.INFO)
-logger.info('Listening on {} DEBUG={}'.format(PORT, DEBUG))
-app.run(host=HOST, port=PORT, debug=DEBUG)
+logger.info(f"Listening on http://{HOST}:{PORT} FLASK_DEBUG={FLASK_DEBUG}'")
+app.run(host=HOST, port=PORT, debug=FLASK_DEBUG)
