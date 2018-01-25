@@ -2,7 +2,6 @@
 
 [![IMAGE ALT TEXT HERE](docs/images/bear-vimeo.jpg)](https://vimeo.com/248514938)
 
-
 - A Holiday Happening
 - [A Life Size Brown Cardboard Bear](https://www.amazon.com/Brown-Bear-Advanced-Graphics-Cardboard/dp/B00B03DT0O)
 - Keenan Zucker
@@ -23,7 +22,7 @@ haven't been tested.
 
 ### macOS and Linux
 
-Copy `envrc.template`: `cp envrc.template .envrc`
+Copy `envrc.template`: `cp envrc.template .envrc`.
 
 Replace the strings in `.envrc` by your credentials and phone number.
 
@@ -49,11 +48,11 @@ This adds entries to the Windows registry. You only need to do this once.
 
 Send a test message (replace the number below by your own phone number):
 
-`python3 scripts/send_sms_message.py +16175551010'
+`python3 scripts/send_sms_message.py +16175551010`
 
 Send a test message to the bear:
 
-`python3 scripts/send_mqtt_message.py "Happy happy"'
+`python3 scripts/send_mqtt_message.py "forget about your worries"'
 
 ## Acknowledgements
 

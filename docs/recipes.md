@@ -13,7 +13,7 @@ Service.
     * macOS: `brew install espeak`
     * Linux: `sudo apt-get install espeak`
 3. Run `python3 scripts/tts_worker.py`
-4. Test it. You can run `python3 scripts/send_mqtt_message.py "Happy happy"` to
+4. Test it. You can run `python3 scripts/send_mqtt_message.py "forget about your worries"` to
    test.
 
 ## Run a local Twilio Gateway
@@ -21,7 +21,7 @@ Service.
 These instructions are for use with a local development Twilio gateway. You
 don't need this if you're connecting to the public gateway.
 
-1. Go to the Twilio phone number configuration page, e.g. https://www.twilio.com/console/phone-numbers/{sid}.
+1. Go to the Twilio phone number configuration page, e.g. <https://www.twilio.com/console/phone-numbers/{sid}>.
 2. Under "Messaging: A Message Comes In", set the webhook to the server URL
    followed by the `/sms_webhook` path, e.g.
    `https://c115d7a2.ngrok.io/sms_webhook`.
