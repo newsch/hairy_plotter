@@ -51,7 +51,7 @@ def create_subscription_queue(topic):
             print('Continuing without subscriptions', file=sys.stderr)
 
     while True:
-        payload = json.loads(messages.get().payload)
+        payload = json.loads(messages.get().payload.decode('utf-8'))
         payload = {k: v[0] if isinstance(v, list) and len(v) == 1 else v
                    for k, v in payload.items()}
         yield payload
