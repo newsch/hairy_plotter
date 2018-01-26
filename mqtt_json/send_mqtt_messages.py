@@ -2,7 +2,7 @@ import json
 import sys
 import logging
 import paho.mqtt.publish as mqtt_publish
-import mqtt_config
+from .mqtt_config import config
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('messages')
@@ -14,9 +14,9 @@ def publish(topic, **payload):
                         payload=json.dumps(payload),
                         qos=1,
                         retain=True,
-                        hostname=mqtt_config.hostname,
-                        auth=mqtt_config.auth,
-                        port=mqtt_config.port,
+                        hostname=config.hostname,
+                        auth=config.auth,
+                        port=config.port,
                         client_id='')
 
 
@@ -31,7 +31,7 @@ def repl(topic):
 
 def main(topic='speak'):
     # logger.setLevel(logging.INFO)
-    if not mqtt_config.hostname:
+    if not config.hostname:
         print('At least one of these must be set:', ', '.join(mqtt_config.MQTT_ENV_VARS), file=sys.stderr)
         sys.exit(1)
     if len(sys.argv) > 1:

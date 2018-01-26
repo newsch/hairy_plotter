@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 import logging
+import os
 import platform
 import subprocess
+import sys
 
 import click
-from receive_mqtt_messages import create_subscription_queue
+
+sys.path.append(os.path.join(os.path.dirname(__file__), './..'))
+import mqtt_json
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('speaker')
@@ -13,11 +17,13 @@ logger.setLevel(logging.INFO)
 
 SPEECH_COMMAND = 'say' if platform.system() == 'Darwin' else 'espeak'
 
+mqtt_client = mqtt_json.Client()
+
 
 @click.command()
 @click.option('--topic', default='speak')
 def main(topic):
-    for msg in create_subscription_queue(topic):
+    for msg in mqtt_client.create_subscription_queue(topic):
         message = msg['message']
         logger.info(msg)
         res = subprocess.run([SPEECH_COMMAND, message],

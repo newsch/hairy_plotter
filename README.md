@@ -17,8 +17,8 @@ This requires a running bear server.
 
 ## Install Instructions
 
-Make sure you have a running python 3.6. Earlier versions might work too, but
-haven't been tested.
+Make sure you have a running python 3.6. Earlier versions of Python 3.x might
+work too, but haven't been tested. Python 2.x is Right Out.
 
 ### macOS and Linux
 
@@ -52,7 +52,7 @@ Send a test message (replace the number below by your own phone number):
 
 Send a test message to the bear:
 
-`python3 scripts/send_mqtt_message.py "forget about your worries"'
+`python3 mqtt_json/send_mqtt_message.py "forget about your worries"'
 
 ## Acknowledgements
 

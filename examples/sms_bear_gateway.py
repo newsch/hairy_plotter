@@ -8,9 +8,8 @@ import click
 from twilio.rest import Client
 from profanityfilter import ProfanityFilter
 
-sys.path.append(os.path.join(os.path.dirname(__file__), './../scripts'))
-from send_mqtt_messages import publish
-from receive_mqtt_messages import create_subscription_queue
+sys.path.append(os.path.join(os.path.dirname(__file__), './..'))
+import mqtt_json
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('messages')
@@ -40,6 +39,8 @@ CANNED_SPEECHES = [
 
 pf = ProfanityFilter()
 
+mqtt_client = mqtt_json.Client()
+
 
 def process_message(message, reply_text=None):
     from_number = message['From']
@@ -48,7 +49,7 @@ def process_message(message, reply_text=None):
     if pf.is_clean(message_body):
         speech = parse_command(message_body)
         if speech:
-            publish(SEND_TOPIC, message=speech)
+            mqtt_client.publish(SEND_TOPIC, message=speech)
         response_text = reply_text
     else:
         response_text = UNCLEAN_MESSAGE_REPLY_TEXT
@@ -80,7 +81,7 @@ def main(reply_text=None):
     logger.setLevel(logging.INFO)
     topic = 'incoming-sms-' + PHONE_NUMBER.strip('+')
     logger.info('Waiting for messages on {}'.format(topic))
-    for payload in create_subscription_queue(topic):
+    for payload in mqtt_client.create_subscription_queue(topic):
         process_message(payload, reply_text=reply_text)
 
 

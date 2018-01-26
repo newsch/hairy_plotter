@@ -6,7 +6,7 @@ from queue import Queue
 
 import click
 import paho.mqtt.client as mqtt
-import mqtt_config
+from .mqtt_config import config
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('messages')
@@ -39,13 +39,13 @@ def create_subscription_queue(topic):
     client.on_disconnect = on_disconnect
     client.on_publish = on_publish
 
-    if mqtt_config.hostname:
-        if mqtt_config.username:
-            client.username_pw_set(mqtt_config.username, mqtt_config.password)
+    if config.hostname:
+        if config.username:
+            client.username_pw_set(config.username, config.password)
         try:
-            client.connect(mqtt_config.hostname, 1883, 60)
+            client.connect(config.hostname, 1883, 60)
             client.loop_start()
-            logger.info('subscribed to %s', mqtt_config.hostname)
+            logger.info('subscribed to %s', config.hostname)
         except socket.error as err:
             print('MQTT:', err, file=sys.stderr)
             print('Continuing without subscriptions', file=sys.stderr)
