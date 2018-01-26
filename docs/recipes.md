@@ -16,17 +16,7 @@ Service.
 4. Test it. You can run `python3 scripts/send_mqtt_message.py "forget about your worries"` to
    test.
 
-## Run a local Twilio Gateway
-
-These instructions are for use with a local development Twilio gateway. You
-don't need this if you're connecting to the public gateway.
-
-1. Go to the Twilio phone number configuration page, e.g. <https://www.twilio.com/console/phone-numbers/{sid}>.
-2. Under "Messaging: A Message Comes In", set the webhook to the server URL
-   followed by the `/sms_webhook` path, e.g.
-   `https://c115d7a2.ngrok.io/sms_webhook`.
-
-## Use a local MQTT server
+## Use a local RabbitMQ server
 
 For local development, you may find it useful to run a local RabbitMQ server.
 
@@ -37,12 +27,14 @@ Add `rabbitmqadmin` to your path. (On macOS: `export
 PATH=/usr/local/Cellar/rabbitmq/3.7.2/sbin/:PATH`.) Alternatively, you can
 replace `rabbitmqadmin` by `/path/to/rabbitmqadmin` in the instructions below.
 
-Create queues for the speaker and for your phone number:
+Create a queue for speaker messages:
 
 ```bash
 rabbitmqadmin declare queue name=speak
 rabbitmqadmin declare binding source=amq.topic destination_type=queue destination=speak routing_key=speak
-
-rabbitmqadmin declare queue name=incoming-sms-16175551010
-rabbitmqadmin declare binding source=amq.topic destination_type=queue destination=incoming-sms-16175551010 routing_key=incoming-sms-16175551010
 ```
+
+Note that at the example script assumes a single Twilio server for the Twilio
+SMS gateway, and the Bear service. In order to use a local RabbitMQ server, you
+will therefore also want to set up your own Twilio → Gateway and run it locally
+as described [here](https://github.com/olin-build/twilio-mqtt-gateway).
