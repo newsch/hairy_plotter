@@ -1,0 +1,40 @@
+@startuml
+skinparam handwritten true
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+
+actor "user" as phone
+cloud cloud {
+    node "Twilio Service" as twilio
+    node "Twilio Gateway" as twilio_gateway
+    node RabbitMQ {
+        top to bottom direction
+        storage "topic exchange" as exchange
+        queue incoming_sms_6175551010
+        queue incoming_sms_6175552121
+        queue incoming_sms_6175553232
+        queue "speech queue" as speech_queue
+    }
+}
+
+node "Student laptop" as laptop {
+    file sms_bear_gateway_py
+}
+
+note top of twilio_gateway : running on Heroku
+note top of RabbitMQ : running on the CloudAMQP service
+
+node "Bear server laptop" as bear_server
+
+phone -> twilio: SMS
+twilio -> twilio_gateway: POST /sms
+twilio_gateway --> exchange
+exchange --> incoming_sms_6175551010
+exchange --> incoming_sms_6175552121
+exchange --> incoming_sms_6175553232
+incoming_sms_6175551010 --> sms_bear_gateway_py
+sms_bear_gateway_py --> speech_queue
+speech_queue -> bear_server
+actor "bear" as speaker
+bear_server -> speaker
+@enduml

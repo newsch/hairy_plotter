@@ -54,6 +54,14 @@ Send a test message to the bear:
 
 `python3 mqtt_json/send_mqtt_message.py "forget about your worries"'
 
+## Architecture
+
+The SMS ⟶ Bear gateway example depends on the [Twilio ⟶ MQTT Gateway](https://github.com/olin-build/twilio-mqtt-gateway).
+
+Together with the Gateway, it looks like this:
+
+![](./docs/images/network-diagram.png)
+
 ## Acknowledgements
 
 Bear-as-a-Service was adapted from Patrick Huston's Holiday Bear, introduced at
