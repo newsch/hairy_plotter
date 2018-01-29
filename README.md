@@ -7,11 +7,14 @@
 - Keenan Zucker
 - Patrick Huston
 
-## Running the Example
+## Quick Start (client only)
 
-This requires a running bear server.
+This requires a running Bear server, and a [Twilio ⟶ MQTT Gateway](https://github.com/olin-build/twilio-mqtt-gateway).
 
-1. Follow the setup instructions below.
+In class, you were given your Twilio phone number, and the credentials for
+The Bear server and Twilio gateway.
+
+1. Follow the Install instructions below.
 2. Run `python3 examples/sms_bear_gateway.py`
 3. Send a text message to your Twilio phone number.
 
@@ -53,6 +56,18 @@ Send a test message. (Replace the number below by your own phone number.)
 Send a test message to the bear:
 
 `python3 mqtt_json/send_mqtt_message.py "forget about your worries"`
+
+## Running the Server
+
+Provision a RabbitMQ server. Or, use the same server as the Twilio ⟶ MQTT
+Gateway.
+
+`pip3 install -r requirements.txt` and create `.envrc`, as above.
+
+On Linux and Windows, install [espeak](http://espeak.sourceforge.net).
+On macOS, the server uses the built-in `say` command, which has better quality.
+
+`python tts_worker.py`.
 
 ## Architecture
 
