@@ -82,6 +82,8 @@ Together with the Gateway, it looks like this:
 Bear-as-a-Service was adapted from Patrick Huston's Holiday Bear, introduced at
 the Olin College December 2017 Holiday Party.
 
+Jeff Goldenson came up with the “Bear as a Service” idea.
+
 ## LICENSE
 
 MIT
