@@ -13,24 +13,24 @@ This requires a running bear server.
 
 1. Follow the setup instructions below.
 2. Run `python3 examples/sms_bear_gateway.py`
-3. Send text
+3. Send a text message to your Twilio phone number.
 
-## Install Instructions
+## Install
 
-Make sure you have a running python 3.6. Earlier versions of Python 3.x might
+Make sure you have a running Python 3.6. Earlier versions of Python 3.x might
 work too, but haven't been tested. Python 2.x is Right Out.
 
 ### macOS and Linux
 
-Copy `envrc.template`: `cp envrc.template .envrc`.
+Copy `envrc.template` to `.envrc`. On Linux/macOS: `cp envrc.template .envrc`.
 
-Replace the strings in `.envrc` by your credentials and phone number.
+Replace the strings in `.envrc` by your Twilio and MQTT credentials and phone number.
 
-`source .envrc`
+Execute: `source .envrc`
 
-Optionally install [direnv](https://direnv.net/)
+Or, optionally install [direnv](https://direnv.net/). This will prevent you from having to manually `source .envrc` each time in the future.
 
-Now continue with the "All Platforms" instructions.
+Now continue to the "All Platforms" instructions.
 
 ### Windows
 
@@ -46,13 +46,13 @@ This adds entries to the Windows registry. You only need to do this once.
 
 `pip3 install -r requirements.txt`
 
-Send a test message (replace the number below by your own phone number):
+Send a test message. (Replace the number below by your own phone number.)
 
 `python3 scripts/send_sms_message.py +16175551010`
 
 Send a test message to the bear:
 
-`python3 mqtt_json/send_mqtt_message.py "forget about your worries"'
+`python3 mqtt_json/send_mqtt_message.py "forget about your worries"`
 
 ## Architecture
 
