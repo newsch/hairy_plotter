@@ -1,3 +1,3 @@
 .PHONY: docs
 docs:
-	plantuml docs/network-diagram.txt
+	plantuml docs/network-diagram.txt -o images
