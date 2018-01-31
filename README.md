@@ -1,4 +1,5 @@
 # Bear-as-a-Service
+[![Build Status](https://travis-ci.org/olinlibrary/bear-as-a-service.svg?branch=master)](https://travis-ci.org/olinlibrary/bear-as-a-service)
 
 [![IMAGE ALT TEXT HERE](docs/images/bear-vimeo.jpg)](https://vimeo.com/248514938)
 
