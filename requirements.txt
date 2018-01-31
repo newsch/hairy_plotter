@@ -5,6 +5,7 @@ twilio~=6.10.1
 # Testing
 pytest~=3.2.2
 pytest-watch
+tox
 
 # Example gateway
 profanityfilter~=2.0.3

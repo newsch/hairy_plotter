@@ -75,6 +75,10 @@ On macOS, the server uses the built-in `say` command, which has better quality.
 
 `pytest-watch` runs the tests in watch mode.
 
+`tox` runs the tests in their own virtual environment.
+This validates `requirements.txt` (and could be used to test the code in
+multiple different Python versions).
+
 ## Architecture
 
 The SMS ⟶ Bear gateway example depends on the [Twilio ⟶ MQTT Gateway](https://github.com/olin-build/twilio-mqtt-gateway).
