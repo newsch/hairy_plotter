@@ -7,5 +7,8 @@ pytest~=3.2.2
 pytest-watch
 tox
 
+# Linting
+flake8
+
 # Example gateway
 profanityfilter~=2.0.3

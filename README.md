@@ -76,9 +76,11 @@ On macOS, the server uses the built-in `say` command, which has better quality.
 
 `pytest-watch` runs the tests in watch mode.
 
-`tox` runs the tests in their own virtual environment.
-This validates `requirements.txt` (and could be used to test the code in
-multiple different Python versions).
+`flake8 .` lints the code.
+
+`tox` runs the tests and linter in their own Python virtual environment.
+This validates `requirements.txt`, and could be used to test the code in
+multiple different Python versions.
 
 ## Architecture
 
