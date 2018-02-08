@@ -15,6 +15,7 @@ flake8-bandit     # security testing
 flake8-bugbear    # likely bugs and design problems
 flake8-builtins   # using a Python built-in as a variable name
 flake8-docstrings # doc string format
+flake8-isort      # alphabetize and group imports according to PEP8
 # Sometimes I use this:
 # flake8-comprehensions
 # I just discovered this:

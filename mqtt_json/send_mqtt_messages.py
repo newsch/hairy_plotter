@@ -1,7 +1,9 @@
 import json
-import sys
 import logging
+import sys
+
 import paho.mqtt.publish as mqtt_publish
+
 from .mqtt_config import config
 
 logging.basicConfig(level=logging.WARNING)

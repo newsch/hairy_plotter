@@ -6,6 +6,7 @@ from queue import Queue
 
 import click
 import paho.mqtt.client as mqtt
+
 from .mqtt_config import config
 
 logging.basicConfig(level=logging.WARNING)

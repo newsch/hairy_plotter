@@ -1,7 +1,7 @@
 """A wrapper for MQTT, with JSON payloads and an API that I find easier."""
 
-from .send_mqtt_messages import publish
 from .receive_mqtt_messages import create_subscription_queue
+from .send_mqtt_messages import publish
 
 
 class Client(object):

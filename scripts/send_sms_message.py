@@ -1,7 +1,7 @@
 # /usr/bin/env python3
 # Modified from https://www.twilio.com/docs/quickstart/python/sms
-import re
 import os
+import re
 
 import click
 from twilio.rest import Client

@@ -1,9 +1,11 @@
 import os
 import sys
 
+from unittest.mock import MagicMock, patch  # noqa: I001
+
+# noqa: I003
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from mqtt_json import Client                # noqa: E402
-from unittest.mock import MagicMock, patch  # noqa: E402
+from mqtt_json import Client  # noqa: E402,I001,I003
 
 
 @patch('paho.mqtt.publish.single')
