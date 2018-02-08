@@ -65,5 +65,6 @@ def main(topic):
     for payload in create_subscription_queue(topic):
         print(payload)
 
+
 if __name__ == '__main__':
     main()

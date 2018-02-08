@@ -31,5 +31,6 @@ def main(topic):
         if res.returncode != 0:
             logger.error(res.stderr.decode().strip())
 
+
 if __name__ == '__main__':
     main()

@@ -29,5 +29,6 @@ def parse_url(url):
 
     return MQTTConfig(hostname, port, username, password, auth)
 
+
 if MQTT_URL:
     config = parse_url(MQTT_URL)

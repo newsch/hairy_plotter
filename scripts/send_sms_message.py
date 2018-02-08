@@ -28,5 +28,6 @@ def send_sms_message(to_number, message_body):
         from_=PHONE_NUMBER,
         body=message_body)
 
+
 if __name__ == '__main__':
     send_sms_message()
