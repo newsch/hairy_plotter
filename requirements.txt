@@ -7,6 +7,10 @@ pytest~=3.2.2
 pytest-watch
 tox
 
+# Coverage
+coverage
+pytest-cov
+
 # Linting
 flake8
 # I generally run with these:

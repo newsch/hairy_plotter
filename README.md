@@ -76,6 +76,9 @@ On macOS, the server uses the built-in `say` command, which has better quality.
 
 `pytest-watch` runs the tests in watch mode.
 
+`pytest --cov=. --cov-report html:coverage` generates a code coverage report.
+Open `./coverage/index.html` to view it.
+
 `flake8 .` lints the code.
 
 `tox` runs the tests and linter in their own Python virtual environment.
