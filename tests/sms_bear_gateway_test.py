@@ -29,6 +29,17 @@ def test_parse_command(random_choice):
     # removes non-ASCII characters
     assert sms_bear_gateway.parse_command('say Héllo') == 'hllo'
 
+    # strips whitespace
+    assert sms_bear_gateway.parse_command('say   Hello') == 'hello'
+    assert sms_bear_gateway.parse_command('say Hello ') == 'hello'
+    assert sms_bear_gateway.parse_command('say Hello\n') == 'hello'
+    assert sms_bear_gateway.parse_command(' say Hello') == 'hello'
+    assert sms_bear_gateway.parse_command('\nsay Hello') == 'hello'
+    assert sms_bear_gateway.parse_command('say Hello') == 'hello'
+
+    # recognizes upper-case commands
+    assert sms_bear_gateway.parse_command('SAY Hello') == 'hello'
+
 
 @patch('twilio.rest.Client')
 @patch('sms_bear_gateway.pf.is_clean', wraps=lambda s: 'profanity' not in s)
