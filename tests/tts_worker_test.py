@@ -23,7 +23,7 @@ def test_process_speech_message(run):
 
     # Test a new-style message.
     with patch('tts_worker.SPEECH_COMMAND', new='speech-command'):
-        tts_worker.process_speech_message(dict(message='Hello world'))
+        tts_worker.process_speech_message(dict(version='1', text='Hello world'))
     run.assert_called_with(['speech-command', 'Hello world'],
                            stderr=subprocess.PIPE,
                            stdout=subprocess.PIPE)

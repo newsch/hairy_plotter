@@ -15,13 +15,17 @@ def test_parse_command(random_choice):
     # canned responses
     assert sms_bear_gateway.parse_command('say') == 'random response'
     assert sms_bear_gateway.parse_command('speak') == 'random response'
-    # verbatim
+
+    # verbatim text
     assert sms_bear_gateway.parse_command('say hello') == 'hello'
     assert sms_bear_gateway.parse_command('speak hello') == 'hello'
-    # downcases test
+
+    # downcases text
     assert sms_bear_gateway.parse_command('speak Hello') == 'hello'
+
     # removes punctuation
     assert sms_bear_gateway.parse_command('speak Hello, world!') == 'hello world'
+
     # removes non-ASCII characters
     assert sms_bear_gateway.parse_command('say Héllo') == 'hllo'
 
