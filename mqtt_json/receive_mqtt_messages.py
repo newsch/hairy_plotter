@@ -1,7 +1,6 @@
 import json
 import logging
 import socket
-import sys
 from queue import Queue
 
 import click
@@ -14,6 +13,10 @@ logger = logging.getLogger('messages')
 
 
 def create_subscription_queue(topic):
+    """Generate messages. These are the decoded JSON payloads of MQTT messages.
+
+    Raises a socket.error if the connection fails.
+    """
     messages = Queue()
 
     def on_connect(client, userdata, flags, rc):
@@ -46,10 +49,9 @@ def create_subscription_queue(topic):
         try:
             client.connect(config.hostname, 1883, 60)
             client.loop_start()
-            logger.info('subscribed to %s', config.hostname)
         except socket.error as err:
-            print('MQTT:', err, file=sys.stderr)
-            print('Continuing without subscriptions', file=sys.stderr)
+            logger.error('MQTT:', err)
+            raise
 
     while True:
         payload = json.loads(messages.get().payload.decode('utf-8'))
