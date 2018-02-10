@@ -18,6 +18,10 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('speaker')
 logger.setLevel(logging.INFO)
 
+# The current speech message version. Messages in this format are dictionaries
+# `dict(version='1', text='Hello world')`
+SPEECH_MESSAGE_VERSION = '1'
+
 # The command-line program to use for speech synthesis.
 DEFAULT_SPEECH_COMMAND = 'say' if platform.system() == 'Darwin' else 'espeak'
 SPEECH_COMMAND = os.getenv('BEAR_SPEECH_COMMAND', DEFAULT_SPEECH_COMMAND)
@@ -26,13 +30,24 @@ mqtt_client = mqtt_json.Client()
 
 
 def process_speech_message(message):
+    message = upgrade_speech_message(message)
     logger.info(message)
-    message_text = message['message']
+    message_text = message['text']
     res = subprocess.run([SPEECH_COMMAND, message_text],
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
     if res.returncode != 0:
         logger.error(res.stderr.decode().strip())
+
+
+def upgrade_speech_message(message):
+    """Return a current-version speech message."""
+    version = message.get('version')
+    if not version:
+        text = message['message']
+        return dict(version=SPEECH_MESSAGE_VERSION, text=text)
+    assert version == SPEECH_MESSAGE_VERSION
+    return message
 
 
 @click.command()
