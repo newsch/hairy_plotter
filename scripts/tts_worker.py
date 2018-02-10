@@ -7,29 +7,39 @@ import sys
 
 import click
 
-sys.path.append(os.path.join(os.path.dirname(__file__), './..'))  # noqa: I003
+# noqa: I003
+# Allow this program to even if it's invoked from a current working directory
+# different from the project root.
+# FIXME Maybe this mode of operation isn't worth it.
+sys.path.append(os.path.join(os.path.dirname(__file__), './..'))
 import mqtt_json  # noqa: E402,I001
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('speaker')
 logger.setLevel(logging.INFO)
 
-
-SPEECH_COMMAND = 'say' if platform.system() == 'Darwin' else 'espeak'
+# The command-line program to use for speech synthesis.
+DEFAULT_SPEECH_COMMAND = 'say' if platform.system() == 'Darwin' else 'espeak'
+SPEECH_COMMAND = os.getenv('BEAR_SPEECH_COMMAND', DEFAULT_SPEECH_COMMAND)
 
 mqtt_client = mqtt_json.Client()
+
+
+def process_speech_message(message):
+    logger.info(message)
+    message_text = message['message']
+    res = subprocess.run([SPEECH_COMMAND, message_text],
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    if res.returncode != 0:
+        logger.error(res.stderr.decode().strip())
 
 
 @click.command()
 @click.option('--topic', default='speak')
 def main(topic):
     for msg in mqtt_client.create_subscription_queue(topic):
-        message = msg['message']
-        logger.info(msg)
-        res = subprocess.run([SPEECH_COMMAND, message],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if res.returncode != 0:
-            logger.error(res.stderr.decode().strip())
+        process_speech_message(msg)
 
 
 if __name__ == '__main__':
