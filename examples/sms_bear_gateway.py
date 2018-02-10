@@ -5,8 +5,8 @@ import string
 import sys
 
 import click
+import twilio.rest
 from profanityfilter import ProfanityFilter
-from twilio.rest import Client
 
 sys.path.append(os.path.join(os.path.dirname(__file__), './..'))  # noqa: I003
 import mqtt_json  # noqa: E402,I001
@@ -24,7 +24,8 @@ assert ACCOUNT_SID, 'Error: the TWILIO_ACCOUNT_SID is not set'
 assert AUTH_TOKEN, 'Error: the TWILIO_AUTH_TOKEN is not set'
 assert PHONE_NUMBER, 'Error: the TWILIO_PHONE_NUMBER is not set'
 
-REPLY_TEXT = os.getenv('BEAR_REPLY_TEXT') or "The bear has received your message."
+# FIXME REPLY_TEXT isn't used. Find a place for it, or remove it.
+REPLY_TEXT = os.getenv('BEAR_REPLY_TEXT', "The bear has received your message.")
 UNCLEAN_MESSAGE_REPLY_TEXT = "Hey! That's not very nice. Keep it clean, kids!"
 
 CANNED_SPEECHES = [
@@ -51,7 +52,7 @@ pf = ProfanityFilter()
 mqtt_client = mqtt_json.Client()
 
 
-def process_message(message, reply_text=None):
+def process_text_message(message, reply_text=None):
     from_number = message['From']
     message_body = message['Body']
 
@@ -63,14 +64,28 @@ def process_message(message, reply_text=None):
     else:
         response_text = UNCLEAN_MESSAGE_REPLY_TEXT
     if response_text:
-        client = Client(ACCOUNT_SID, AUTH_TOKEN)
-        client.api.account.messages.create(
-            to=from_number,  # sic
+        twilio_client = twilio.rest.Client(ACCOUNT_SID, AUTH_TOKEN)
+        # `to` and `from` are reversed: this message goes *to* the number that
+        # the incoming message came *from*.
+        twilio_client.api.account.messages.create(
+            to=from_number,  # sic — see previous comment
             from_=PHONE_NUMBER,
             body=response_text)
 
 
 def parse_command(command):
+    """Parse a possible text command, and returns the text to speak.
+
+    * 'say' -> speak a canned speech
+    * 'say something' -> speak the words after 'say'
+    * 'speak' or 'speak something' -> 'speak' is the same as 'say'
+    * anything else -> speak the anything else
+    """
+    # remove 8-bit characters
+    # FIXME if the intent is to remove non-ASCII, it should remove < 32 too
+    # TODO probably the worker should do this instead, since it's connected
+    # to the synthesizer and knows whether the synthesizer can handle accents
+    # and other non-ASCII
     command = ''.join(c for c in command
                       if ord(c) < 128 and c not in string.punctuation)
 
@@ -81,6 +96,8 @@ def parse_command(command):
         else:
             return random.choice(CANNED_SPEECHES)
     else:
+        # TODO probably the worker should do this instead. Some synthesizers
+        # might be able to do meaningful things with case.
         return command.lower()
 
 
@@ -91,7 +108,7 @@ def main(reply_text=None):
     topic = 'incoming-sms-' + PHONE_NUMBER.strip('+')
     logger.info('Waiting for messages on {}'.format(topic))
     for payload in mqtt_client.create_subscription_queue(topic):
-        process_message(payload, reply_text=reply_text)
+        process_text_message(payload, reply_text=reply_text)
 
 
 if __name__ == '__main__':
