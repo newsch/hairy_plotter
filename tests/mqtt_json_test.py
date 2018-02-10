@@ -1,7 +1,6 @@
 import os
 import sys
-
-from unittest.mock import MagicMock, patch  # noqa: I001
+from unittest.mock import MagicMock, patch
 
 # noqa: I003
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -29,7 +28,7 @@ def test_create_subscription_queue(mqtt_factory):
     client = Client()
     queue = client.create_subscription_queue('topic')
     msg = next(queue, None)
-    assert mqtt_client.connect.called
-    assert mqtt_client.subscribe.called
-    assert mqtt_client.loop_start.called
+    mqtt_client.connect.assert_called()
+    mqtt_client.subscribe.assert_called()
+    mqtt_client.loop_start.assert_called()
     assert msg == {'key': 1}
