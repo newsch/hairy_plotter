@@ -15,7 +15,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), './..'))
 import mqtt_json  # noqa: E402,I001
 
 logging.basicConfig(level=logging.WARNING)
-logger = logging.getLogger('speaker')
+logger = logging.getLogger('tts-worker')
 logger.setLevel(logging.INFO)
 
 # The current speech message version. Messages in this format are dictionaries

@@ -9,7 +9,7 @@ import paho.mqtt.client as mqtt
 from .mqtt_config import config
 
 logging.basicConfig(level=logging.WARNING)
-logger = logging.getLogger('messages')
+logger = logging.getLogger('mqtt_json')
 
 
 def create_subscription_queue(topic):
