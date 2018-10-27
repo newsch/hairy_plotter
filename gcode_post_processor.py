@@ -20,6 +20,10 @@ SEND_HOME = "G0X0Y0"
 Z_PATTERN = "G\dZ(-?\d+.?\d*)(?:F\d+.\d*)?"
 Z_COMPILED = re.compile(Z_PATTERN)
 
+skip_list = [
+    "M6"
+]
+
 
 def z_replace(matchobj):
     move = float(matchobj.group(1))
@@ -45,6 +49,9 @@ if __name__ == "__main__":
     for line in content:
         # replace Z codes w/ pen change
         # import pdb; pdb.set_trace()
+        for cmd in skip_list:
+            if cmd in line:
+                continue
         if Z_COMPILED.match(line):
             line = Z_COMPILED.sub(z_replace, line)
             new_lines.append(line)
