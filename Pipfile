@@ -24,5 +24,7 @@ mccabe = "*"
 "flake8-isort" = "*"
 "flake8-mock" = "*"
 profanityfilter = "~=2.0.3"
+svgwrite = "*"
 
 [dev-packages]
+"flake8" = "*"
