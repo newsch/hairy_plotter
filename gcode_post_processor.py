@@ -17,7 +17,7 @@ PAUSE_TEMP = "G4 P{}"
 
 SEND_HOME = "G0X0Y0"
 
-Z_PATTERN = "G\dZ(-?\d+.?\d*)(?:F\d+.\d*)?"
+Z_PATTERN = "(G[01])([\w\d.]*)Z(-?\d+.?\d*)([\w\d.]*)"
 Z_COMPILED = re.compile(Z_PATTERN)
 
 skip_list = [
@@ -26,12 +26,22 @@ skip_list = [
 
 
 def z_replace(matchobj):
-    move = float(matchobj.group(1))
-    if move < 0:
-        cmd = PEN_MOVE_TEMP.format(PEN_1_DOWN)
+    # TODO: remove F commands
+    cmds = []
+    code = matchobj.group(1)
+    pre = matchobj.group(2)
+    zmove = float(matchobj.group(3))
+    post = matchobj.group(4)
+    if pre:
+        cmds.append(code+pre)
+    if zmove < 0:
+        cmds.append(PEN_MOVE_TEMP.format(PEN_1_DOWN))
     else:
-        cmd = PEN_MOVE_TEMP.format(PEN_UP)
-    return cmd
+        cmds.append(PEN_MOVE_TEMP.format(PEN_UP))
+
+    if post:
+        cmds.append(code+post)
+    return '\n'.join(cmds)
 
 if __name__ == "__main__":
     import argparse
@@ -49,13 +59,17 @@ if __name__ == "__main__":
     for line in content:
         # replace Z codes w/ pen change
         # import pdb; pdb.set_trace()
+        skip = False
         for cmd in skip_list:
             if cmd in line:
-                continue
+                skip = True
+        if skip:
+            continue  # skip to next line
+
         if Z_COMPILED.match(line):
-            line = Z_COMPILED.sub(z_replace, line)
-            new_lines.append(line)
-            new_lines.append(PAUSE_TEMP.format(0.5))
+            cmds = Z_COMPILED.sub(z_replace, line)
+            for cmd in cmds.splitlines():
+                new_lines.append(cmd)
         else:
             new_lines.append(line)
 
