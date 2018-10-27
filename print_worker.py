@@ -24,6 +24,9 @@ def process_print_message(message):
     logger.info('New message: {}'.format(message))
     message_text = message['message']
 
+    completed = subprocess.run('java -classpath gcodeFont Romans {} > {}.gcode'.format(message_text,message_text))
+    print('returncode:', completed.returncode)
+
     # TODO: convert message to svg
     # TODO: convert svg to gcode
     # TODO: add gcode to print queue
