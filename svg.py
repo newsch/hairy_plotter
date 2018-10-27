@@ -6,7 +6,7 @@ import svgwrite
 
 FONT_SIZE = 20  # in pt
 
-SHEET_WIDTH = 300
+SHEET_WIDTH = 600
 # SHEET_HEIGHT  # roller has no fixed height
 MARGIN = 50
 MAX_WIDTH = SHEET_WIDTH - MARGIN*2  # max width of text in document units
@@ -30,7 +30,8 @@ style_str = (
 def text_to_svg(text, fileobj):
     lines = []
     for line in text.splitlines():
-        lines.append(*wrapper.wrap(line))  # wrap lines at max length
+        for l in wrapper.wrap(line):
+            lines.append(l)  # wrap lines at max length
     lines = lines[:MAX_LINES]  # trim to max length
 
     # calculate sheet dimensions
