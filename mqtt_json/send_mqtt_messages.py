@@ -6,8 +6,8 @@ import paho.mqtt.publish as mqtt_publish
 
 from .mqtt_config import config
 
-logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('mqtt_json')
+logger.setLevel(logging.WARNING)
 
 
 def publish(topic, **payload):
@@ -15,7 +15,7 @@ def publish(topic, **payload):
     mqtt_publish.single(topic,
                         payload=json.dumps(payload),
                         qos=1,
-                        retain=True,
+                        retain=True,  # keep most recent message and send to new connections
                         hostname=config.hostname,
                         auth=config.auth,
                         port=config.port,

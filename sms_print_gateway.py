@@ -10,7 +10,6 @@ from profanityfilter import ProfanityFilter
 sys.path.append(os.path.join(os.path.dirname(__file__), './..'))  # noqa: I003
 import mqtt_json  # noqa: E402,I001
 
-logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('sms-print-gateway')
 
 SEND_TOPIC = 'print'
@@ -56,7 +55,7 @@ def process_text_message(message, reply_text=None):
         # `to` and `from` are reversed: this message goes *to* the number that
         # the incoming message came *from*.
         twilio_client.api.account.messages.create(
-            to=from_number,  # sic — see previous comment
+            to=from_number,  # sic - see previous comment
             from_=PHONE_NUMBER,
             body=response_text)
         # logger.info
@@ -70,8 +69,10 @@ def parse_command(command):
 
 
 if __name__ == '__main__':
-    logger.setLevel(logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
+    # logger.setLevel(logging.DEBUG)
+    # logging.getLogger('mqtt_json').setLevel(logging.ERROR)
     topic = 'incoming-sms-' + PHONE_NUMBER.strip('+')
-    logger.info('Waiting for messages on {}'.format(topic))
+    logging.info('Waiting for messages on {}'.format(topic))
     for payload in mqtt_client.create_subscription_queue(topic):
         process_text_message(payload, reply_text=REPLY_TEXT)

@@ -8,8 +8,8 @@ import paho.mqtt.client as mqtt
 
 from .mqtt_config import config
 
-logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('mqtt_json')
+logger.setLevel(logging.WARNING)
 
 
 def create_subscription_queue(topic):
@@ -22,7 +22,7 @@ def create_subscription_queue(topic):
     def on_connect(client, userdata, flags, rc):
         logger.info('connected result code=%s', str(rc))
         logger.info('subscribe topic=%s', topic)
-        client.subscribe(topic, 0)
+        client.subscribe(topic, 0)  # receive at most once
 
     def on_log(client, userdata, level, string):
         logger.info('log %s %s', level, string)
