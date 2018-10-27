@@ -13,6 +13,7 @@ PEN_2_DOWN = 1
 
 # template for pen movement
 PEN_MOVE_TEMP = "M03 S{}"
+PAUSE_TEMP = "G4 P{}"
 
 SEND_HOME = "G0X0Y0"
 
@@ -23,9 +24,10 @@ Z_COMPILED = re.compile(Z_PATTERN)
 def z_replace(matchobj):
     move = float(matchobj.group(1))
     if move < 0:
-        return PEN_MOVE_TEMP.format(PEN_1_DOWN)
+        cmd = PEN_MOVE_TEMP.format(PEN_1_DOWN)
     else:
-        return PEN_MOVE_TEMP.format(PEN_UP)
+        cmd = PEN_MOVE_TEMP.format(PEN_UP)
+    return cmd
 
 if __name__ == "__main__":
     import argparse
@@ -43,9 +45,12 @@ if __name__ == "__main__":
     for line in content:
         # replace Z codes w/ pen change
         # import pdb; pdb.set_trace()
-        line = Z_COMPILED.sub(z_replace, line)
-
-        new_lines.append(line)
+        if Z_COMPILED.match(line):
+            line = Z_COMPILED.sub(z_replace, line)
+            new_lines.append(line)
+            new_lines.append(PAUSE_TEMP.format(0.5))
+        else:
+            new_lines.append(line)
 
         # ##### INSERT PEN COMMANDS - REPLACE Z TRANSLATION WITH SERVO ROTATION #####
         # #if line contains z retract text, replace with pen up
@@ -57,6 +62,7 @@ if __name__ == "__main__":
         # else:
         #     new_code += line
 
+    new_lines.append(PEN_MOVE_TEMP.format(PEN_1_DOWN))
     new_lines.append(PEN_MOVE_TEMP.format(PEN_UP))
     new_lines.append(SEND_HOME)
     # output new_code
