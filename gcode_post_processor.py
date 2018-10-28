@@ -17,7 +17,9 @@ PAUSE_TEMP = "G4 P{}"
 
 SEND_HOME = "G0X0Y0"
 
-Z_PATTERN = "(G[01])([\w\d.]*)Z(-?\d+.?\d*)([\w\d.]*)"
+Z_LOWER = 0
+Z_UPPER = 1
+Z_PATTERN = "(G[01]) ?([\w\d.]*)Z(-?\d+.?\d*)([\w\d.]*)"
 Z_COMPILED = re.compile(Z_PATTERN)
 
 skip_list = [
@@ -34,10 +36,12 @@ def z_replace(matchobj):
     post = matchobj.group(4)
     if pre:
         cmds.append(code+pre)
-    if zmove < 0:
+    if zmove <= Z_LOWER:
         cmds.append(PEN_MOVE_TEMP.format(PEN_1_DOWN))
-    else:
+        cmds.append(PAUSE_TEMP.format(0.5))
+    elif zmove >= Z_UPPER:
         cmds.append(PEN_MOVE_TEMP.format(PEN_UP))
+        cmds.append(PAUSE_TEMP.format(0.5))
 
     if post:
         cmds.append(code+post)
@@ -54,6 +58,8 @@ if __name__ == "__main__":
 
     # modify gcode
     new_lines = []  # where the new modified code will be put
+    new_lines.append('G0 F1500')  # set feed rate
+
     content = args.infile.read().splitlines()  # gcode as a list where each element is a line
 
     for line in content:
