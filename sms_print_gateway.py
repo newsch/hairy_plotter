@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import logging
 import os
 import random
@@ -45,7 +46,7 @@ def process_text_message(message, reply_text=None):
     if not FILTER_MESSAGES or pf.is_clean(message_body):
         speech = parse_command(message_body)
         if speech:
-            mqtt_client.publish(SEND_TOPIC, message=speech)
+            mqtt_client.publish(SEND_TOPIC, text=speech)
         response_text = reply_text
     else:
         logger.info('Blocked unclean message.')

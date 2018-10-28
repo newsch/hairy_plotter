@@ -143,8 +143,7 @@ if __name__ == "__main__":
 
     calculate_parameters()  # update params with command-line values
 
-    [logging.debug('{}: {}'.format(name, val)) if name == name.upper() else None for name, val in globals().items()]
-        # if name == name.upper():
+    [logging.debug('{}: {}'.format(name, val)) if name == name.upper() else None for name, val in globals().items()]  # print set "constants"
 
     lines = wrap_text(args.infile.read())
     if not args.plaintext:
