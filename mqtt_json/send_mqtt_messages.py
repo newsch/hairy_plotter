@@ -31,7 +31,7 @@ def repl(topic):
         publish(topic, message=message)
 
 
-def main(topic='speak'):
+def main(topic='print'):
     # logger.setLevel(logging.INFO)
     if not config.hostname:
         print('At least one of these must be set:',

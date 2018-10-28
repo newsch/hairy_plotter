@@ -3,7 +3,7 @@
 A collection of scripts for working with a cnc poster printer.
 
 The sms portion of this leans heavily on work from the Hacking the Library course's
-[`bear-as-a-service project`](https://github.com/olinlibrary/bear-as-a-service)
+[`bear-as-a-service project`](https://github.com/olinlibrary/bear-as-a-service).
 
 ## What's Included in the Box
 
@@ -34,10 +34,10 @@ Install python dependencies with [`pipenv`](https://pipenv.readthedocs.io/en/lat
 pipenv install
 ```
 
-[`str2gcode.py`](str2gcode.py) requires a copy of [`gcodeFont.py`](https://github.com/misan/gcodeFont)
+[`str2gcode.py`](str2gcode.py) requires a copy of [`gcodeFont`](https://github.com/misan/gcodeFont)
 
 [`sms_print_gateway.py`](sms_print_gateway.py) depends on the
-[Twilio ⟶ MQTT Gateway](https://github.com/olin-build/twilio-mqtt-gateway).
+[`twilio-mqtt-gateway`](https://github.com/olin-build/twilio-mqtt-gateway).
 
 ### Environment Variables
 
@@ -48,20 +48,34 @@ Replace the strings in `.env` with your Twilio and MQTT credentials and phone nu
 Execute: `source .env` (`pipenv` will also do this automatically whenever you
 use `pipenv run` or `pipenv shell`).
 
-### Running
+### Running scripts
 
-Send a test message. (Replace the number below by your own phone number.)
+> Note: by marking the scripts as executable with `chmod +x <scriptname>`, you
+> can call them with `./scriptname` instead of `python3 <scriptname>`.
+
+Generate an svg from text:
+
+`echo -e "Hello\nWorld" | python3 str2svg.py - out.svg`
+
+Generate gcode from text:
+
+`echo -e "Hello\nWorld" | python3 str2gcode.py - out.gcode`
+
+Patch the gcode (printer-specific):
+
+`python3 gcodepatcher.py out.gcode out-patched.gcode`
+
+Send a test sms message (replace the number below by your own phone number):
 
 `python3 send_sms_message.py +16175551010`
 
-Send a test message to the print_worker:
+Send a test message directly to the `print_worker.py` queue:
 
-`python3 mqtt_json/send_mqtt_message.py "forget about your worries"`
+`python3 mqtt_json/send_mqtt_messages.py "forget about your worries"`
 
-## Run the services
+#### Run the services
 
-Provision a RabbitMQ server. Or, use the same server as the Twilio ⟶ MQTT
-Gateway.
+Provision a RabbitMQ server. Or, use the same server as the `twilio-mqtt-gateway`.
 
 To process incoming sms messages:
 ```
