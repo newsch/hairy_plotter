@@ -1,6 +1,9 @@
 # unnamed printer project
 
-A collection of scripts for working with a cnc poster printer.
+A collection of scripts and services for working with a cnc poster printer, including:
+- printing from sms messages
+- converting text into svg and gcode files
+- fixing gcode output from various programs to meet the printer's somewhat unusual expectations
 
 The sms portion of this leans heavily on work from the Hacking the Library course's
 [`bear-as-a-service project`](https://github.com/olinlibrary/bear-as-a-service).
@@ -10,7 +13,7 @@ The sms portion of this leans heavily on work from the Hacking the Library cours
 ```
 .
 ├── gcodepatcher.py - patch printer-specific quirks in gcode
-├── mqtt_json - library from @osteele for the twilio_mqtt_gateway
+├── mqtt_json - wrapper library from @osteele for interfacing with the mqtt broker
 │   ├── __init__.py
 │   ├── mqtt_config.py
 │   ├── receive_mqtt_messages.py
@@ -34,7 +37,7 @@ Install python dependencies with [`pipenv`](https://pipenv.readthedocs.io/en/lat
 pipenv install
 ```
 
-[`str2gcode.py`](str2gcode.py) requires a copy of [`gcodeFont`](https://github.com/misan/gcodeFont)
+[`str2gcode.py`](str2gcode.py) requires a copy of [`gcodeFont`](https://github.com/misan/gcodeFont).
 
 [`sms_print_gateway.py`](sms_print_gateway.py) depends on the
 [`twilio-mqtt-gateway`](https://github.com/olin-build/twilio-mqtt-gateway).
@@ -48,10 +51,14 @@ Replace the strings in `.env` with your Twilio and MQTT credentials and phone nu
 Execute: `source .env` (`pipenv` will also do this automatically whenever you
 use `pipenv run` or `pipenv shell`).
 
-### Running scripts
+### Running the scripts
+
+> Note: most of these scripts support more command-line options. You can learn
+> more about them with `python3 <scriptname> -h` (and, of course, by reading the
+> source code)
 
 > Note: by marking the scripts as executable with `chmod +x <scriptname>`, you
-> can call them with `./scriptname` instead of `python3 <scriptname>`.
+> can call them with `./<scriptname>` instead of `python3 <scriptname>`
 
 Generate an svg from text:
 
@@ -73,7 +80,7 @@ Send a test message directly to the `print_worker.py` queue:
 
 `python3 mqtt_json/send_mqtt_messages.py "forget about your worries"`
 
-#### Run the services
+### Running the services
 
 Provision a RabbitMQ server. Or, use the same server as the `twilio-mqtt-gateway`.
 
@@ -84,7 +91,7 @@ python3 sms_print_gateway.py
 
 To convert processed sms messages into gcode:
 ```
-python3 print_worker.py`.
+python3 print_worker.py
 ```
 
 ## LICENSE
