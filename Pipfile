@@ -14,12 +14,6 @@ profanityfilter = "~=2.0.3"
 svgwrite = "*"
 
 [dev-packages]
-mccabe = "*"
-pytest = "~=3.2.2"
-pytest-watch = "*"
-tox = "*"
-coverage = "*"
-pytest-cov = "*"
 "flake8" = "*"
 "flake8-bandit" = "*"
 "flake8-bugbear" = "*"
