@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Convert strings into gcode."""
 import logging
 import subprocess
 import string
@@ -144,8 +145,6 @@ if __name__ == "__main__":
 
     [logging.debug('{}: {}'.format(name, val)) if name == name.upper() else None for name, val in globals().items()]
         # if name == name.upper():
-
-
 
     lines = wrap_text(args.infile.read())
     if not args.plaintext:
