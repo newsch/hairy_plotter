@@ -66,14 +66,15 @@ XY_COMPILED = re.compile(XY_PATTERN)
 # commands to remove inline
 STRIP_LIST = [
     re.compile('F'+SPEED_PATTERN),  # feed commands
-    # re.compile('P\d')  # pause commands
+    # re.compile('P\d'),  # pause commands
+    re.compile('G[01] ?X0 ?Y0'),  # return home
 ]
 
 # commands to skip line when reading
 SKIP_LIST = [
     "M6",  # tool change
     "G4 P",  # pause commands
-    movehome(),  # 0,0 return
+    # movehome(),  # 0,0 return
 ]
 
 
