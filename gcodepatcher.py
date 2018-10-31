@@ -40,6 +40,9 @@ def penup():
 def movehome():
     return MOVE_TEMP.format(0, 0)
 
+def move(x,y):
+    return MOVE_TEMP.format(x,y)
+
 def setfeed(rate):
     return FEED_TEMP.format(rate)
 
@@ -52,6 +55,9 @@ Z_PATTERN = "(G[01]) ?([\w\d.]*)Z(-?\d+.?\d*)([\w\d.]*)"
 Z_COMPILED = re.compile(Z_PATTERN)
 Z_LOWER = 0
 Z_UPPER = 1
+
+XY_PATTERN = "(G[01])[\w\d. ]*([XY]-?\d+.?\d*) ?([XY]-?\d+.?\d*)"
+XY_COMPILED = re.compile(XY_PATTERN)
 
 # commands to remove inline
 STRIP_LIST = [
@@ -127,6 +133,31 @@ PROCESS_ORDER = [  # functions to use and the order to use them in
 ]
 
 
+def get_max_y(lines):
+    """Get the max Y coordinate from a file."""
+    def split_setting(text):
+        """Split strings of the form 'Y-1.23'."""
+        axis = text[0]
+        val = text[1:]
+        if val is '' or val is None:
+            val = 0
+        else:
+            val = float(val)
+        return axis, val
+    max_y = 0
+    for line in lines:
+        match = XY_COMPILED.search(line)
+        if match is not None:
+            cmds = map(split_setting, filter(
+                lambda a: a is not None,
+                match.groups([2, 3])))
+            # import pdb; pdb.set_trace()
+            for axis, val in cmds:
+                if axis.lower() == 'y' and val > max_y:
+                    max_y = val
+    return max_y
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
@@ -157,7 +188,8 @@ if __name__ == "__main__":
 
     FOOTER = [  # commands to add at the end of the file
         penup(),
-        pause(PEN_PAUSE)
+        pause(PEN_PAUSE),
+        move(0,get_max_y(new_lines))
     ]
 
     new_lines = [
