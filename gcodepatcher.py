@@ -66,12 +66,13 @@ XY_COMPILED = re.compile(XY_PATTERN)
 # commands to remove inline
 STRIP_LIST = [
     re.compile('F'+SPEED_PATTERN),  # feed commands
-    re.compile('P\d')  # pause commands
+    # re.compile('P\d')  # pause commands
 ]
 
 # commands to skip line when reading
 SKIP_LIST = [
     "M6",  # tool change
+    "G4 P",  # pause commands
     movehome(),  # 0,0 return
 ]
 
@@ -92,7 +93,8 @@ def strip_commands(line):
             logger.debug('Stripped line {!r} w/ pattern {!r}'.format(
                 line, reg.pattern))
             line = reg.sub('', line)  # "substitute" w/ empty string
-    if line.strip() == '':
+    rem = line.strip().lower()
+    if rem == '' or rem == 'g1' or rem == 'g0':
         logger.debug('Removed empty stripped line')
         return []  # return empty if string has no more commands
     else:
@@ -107,7 +109,7 @@ def patch_z(line):
         pre = matchobj.group(2)
         zmove = float(matchobj.group(3))
         post = matchobj.group(4)
-        if pre:
+        if pre.strip() is not '':
             cmds.append(code+pre)
         if zmove <= Z_LOWER:
             cmds.append(pendown(PEN_NUM))
@@ -115,7 +117,7 @@ def patch_z(line):
         elif zmove >= Z_UPPER:
             cmds.append(penup())
             cmds.append(pause(PEN_PAUSE))
-        if post:
+        if post.strip() is not '':
             cmds.append(code+post)
         return '\n'.join(cmds)
 
