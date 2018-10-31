@@ -176,6 +176,8 @@ if __name__ == "__main__":
                         help='output file (use `-` for stdout)')
     parser.add_argument('-p', '--pen', type=int, choices=[1,2],
                         help='pen number to use (default is {})'.format(PEN_NUM))
+    parser.add_argument('-pp', '--pen-pause', type=float,
+                        help='time to pause in seconds while moving pen up/down (default is {})'.format(PEN_PAUSE))
     parser.add_argument('-m', '--margin', type=float,
                         help='y distance to move after print (default is {})'.format(MARGIN))
     args = parser.parse_args()
@@ -184,6 +186,8 @@ if __name__ == "__main__":
         PEN_NUM = args.pen
     if args.margin and MARGIN != args.margin:
         MARGIN = args.margin
+    if args.pen_pause and PEN_PAUSE != args.pen_pause:
+        PEN_PAUSE = args.pen_pause
 
     # modify gcode
     content = args.infile.read().splitlines()  # gcode as a list where each element is a line
