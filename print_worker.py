@@ -32,21 +32,35 @@ def make_gcode(message, align='center', scale: float = None):
     return gcode
 
 
-def process_print_message(message, filename='out.gcode'):
-    message_text = message['text']
-
-    initial_gcode = make_gcode(message_text)
-    # TODO: don't run python from within python
+def make_txt(message):
     completed = subprocess.run(
-        ['python3','gcodepatcher.py', '-', '-'],
-        input=initial_gcode.encode('UTF-8'),
+        ['centerer', '-'],
+        input=message.encode('UTF-8'),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     logger.debug('Process exited with code {}: {}'.format(
         completed.returncode,
         completed.stderr))
+    return completed.stdout
+
+
+def process_print_message(message, filename='out.gcode'):
+    message_text = message['text']
+
+    bytetxt = make_txt(message_text)
+    # initial_gcode = make_gcode(message_text)
+    # TODO: don't run python from within python
+    # completed = subprocess.run(
+    #     ['python3','gcodepatcher.py', '-', '-'],
+    #     input=initial_gcode.encode('UTF-8'),
+    #     stdout=subprocess.PIPE,
+    #     stderr=subprocess.PIPE)
+    # logger.debug('Process exited with code {}: {}'.format(
+    #     completed.returncode,
+    #     completed.stderr))
     with open(filename,'wb') as f:
-        f.write(completed.stdout)
+        # f.write(completed.stdout)
+        f.write(bytetxt)
 
     # TODO: add gcode to print queue
 
@@ -64,4 +78,4 @@ if __name__ == '__main__':
         counter += 1
         filename = 'out{:0=3}.gcode'.format(counter)
         logger.info('Creating file {!r} from message: {}'.format(filename, msg))
-        process_print_message(msg, filename)
+        process_print_message(msg, 'print-queue/'+filename)
