@@ -9,6 +9,9 @@ logger = logging.getLogger(__name__)
 
 FEED_RATE = 9000
 PEN_PAUSE = 0.75  # time in seconds to pause when pen is moving up.down
+MARGIN = 50  # distance to move before next print
+
+PEN_NUM = 1
 
 # servo positions
 PEN_UP = 525
@@ -28,11 +31,12 @@ FEED_TEMP = "F{}"
 def pause(time):
     return PAUSE_TEMP.format(time)
 
-def pen1down():
-    return PEN_MOVE_TEMP.format(PEN_1_DOWN)
-
-def pen2down():
-    return PEN_MOVE_TEMP.format(PEN_2_DOWN)
+def pendown(pen_num):
+    servo_val = {
+        1: PEN_1_DOWN,
+        2: PEN_2_DOWN
+    }[pen_num]
+    return PEN_MOVE_TEMP.format(servo_val)
 
 def penup():
     return PEN_MOVE_TEMP.format(PEN_UP)
@@ -106,11 +110,11 @@ def patch_z(line):
         if pre:
             cmds.append(code+pre)
         if zmove <= Z_LOWER:
-            cmds.append(PEN_MOVE_TEMP.format(PEN_1_DOWN))
-            cmds.append(PAUSE_TEMP.format(PEN_PAUSE))
+            cmds.append(pendown(PEN_NUM))
+            cmds.append(pause(PEN_PAUSE))
         elif zmove >= Z_UPPER:
-            cmds.append(PEN_MOVE_TEMP.format(PEN_UP))
-            cmds.append(PAUSE_TEMP.format(PEN_PAUSE))
+            cmds.append(penup())
+            cmds.append(pause(PEN_PAUSE))
         if post:
             cmds.append(code+post)
         return '\n'.join(cmds)
@@ -167,7 +171,16 @@ if __name__ == "__main__":
                         help='input file (use `-` for stdin)')
     parser.add_argument('outfile', type=argparse.FileType('w'),
                         help='output file (use `-` for stdout)')
+    parser.add_argument('-p', '--pen', type=int, choices=[1,2],
+                        help='pen number to use (default is {})'.format(PEN_NUM))
+    parser.add_argument('-m', '--margin', type=float,
+                        help='y distance to move after print (default is {})'.format(MARGIN))
     args = parser.parse_args()
+
+    if args.pen and PEN_NUM != args.pen:
+        PEN_NUM = args.pen
+    if args.margin and MARGIN != args.margin:
+        MARGIN = args.margin
 
     # modify gcode
     content = args.infile.read().splitlines()  # gcode as a list where each element is a line
@@ -189,7 +202,8 @@ if __name__ == "__main__":
     FOOTER = [  # commands to add at the end of the file
         penup(),
         pause(PEN_PAUSE),
-        move(0,get_max_y(new_lines))
+        move(0, get_max_y(new_lines)+MARGIN),
+        "G10 L20 P1 Y0"  # reset work coordinates
     ]
 
     new_lines = [
