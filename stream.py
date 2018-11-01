@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """\
 
 Stream g-code to grbl controller
 
-This script differs from the simple_stream.py script by 
+This script differs from the simple_stream.py script by
 tracking the number of characters in grbl's serial read
 buffer. This allows grbl to fetch the next line directly
-from the serial buffer and does not have to wait for a 
+from the serial buffer and does not have to wait for a
 response from the computer. This effectively adds another
 buffer layer to prevent buffer starvation.
 
@@ -14,7 +14,7 @@ CHANGELOG:
 - 20140714: Updated baud rate to 115200. Added a settings
   write mode via simple streaming method. MIT-licensed.
 
-TODO: 
+TODO:
 - Add runtime command capabilities
 
 ---------------------
@@ -51,16 +51,18 @@ import argparse
 
 RX_BUFFER_SIZE = 128
 
+ENCODING = 'ascii'
+
 # Define command line argument interface
 parser = argparse.ArgumentParser(description='Stream g-code file to grbl. (pySerial and argparse libraries required)')
 parser.add_argument('gcode_file', type=argparse.FileType('r'),
         help='g-code filename to be streamed')
 parser.add_argument('device_file',
         help='serial device path')
-parser.add_argument('-q','--quiet',action='store_true', default=False, 
+parser.add_argument('-q','--quiet',action='store_true', default=False,
         help='suppress output text')
-parser.add_argument('-s','--settings',action='store_true', default=False, 
-        help='settings write mode')        
+parser.add_argument('-s','--settings',action='store_true', default=False,
+        help='settings write mode')
 args = parser.parse_args()
 
 # Periodic timer to query for status reports
@@ -79,8 +81,8 @@ settings_mode = False
 if args.settings : settings_mode = True
 
 # Wake up grbl
-print "Initializing grbl..."
-s.write("\r\n\r\n")
+print("Initializing grbl...")
+s.write(b"\r\n\r\n")
 
 # Wait for grbl to initialize and flush startup text in serial input
 time.sleep(2)
@@ -91,21 +93,21 @@ l_count = 0
 if settings_mode:
     # Send settings file via simple call-response streaming method. Settings must be streamed
     # in this manner since the EEPROM accessing cycles shut-off the serial interrupt.
-    print "SETTINGS MODE: Streaming", args.gcode_file.name, " to ", args.device_file
+    print("SETTINGS MODE: Streaming", args.gcode_file.name, " to ", args.device_file)
     for line in f:
-        l_count += 1 # Iterate line counter    
+        l_count += 1 # Iterate line counter
         # l_block = re.sub('\s|\(.*?\)','',line).upper() # Strip comments/spaces/new line and capitalize
         l_block = line.strip() # Strip all EOL characters for consistency
-        if verbose: print 'SND: ' + str(l_count) + ':' + l_block,
-        s.write(l_block + '\n') # Send g-code block to grbl
+        if verbose: print('SND: ' + str(l_count) + ':' + l_block)
+        s.write(l_block.encode(ENCODING) + b'\n') # Send g-code block to grbl
         grbl_out = s.readline().strip() # Wait for grbl response with carriage return
-        if verbose: print 'REC:',grbl_out
-else:    
+        if verbose: print('REC:',grbl_out)
+else:
     # Send g-code program via a more agressive streaming protocol that forces characters into
     # Grbl's serial read buffer to ensure Grbl has immediate access to the next g-code command
     # rather than wait for the call-response serial protocol to finish. This is done by careful
-    # counting of the number of characters sent by the streamer to Grbl and tracking Grbl's 
-    # responses, such that we never overflow Grbl's serial read buffer. 
+    # counting of the number of characters sent by the streamer to Grbl and tracking Grbl's
+    # responses, such that we never overflow Grbl's serial read buffer.
     g_count = 0
     c_line = []
     # periodic() # Start status report periodic timer
@@ -114,24 +116,24 @@ else:
         # l_block = re.sub('\s|\(.*?\)','',line).upper() # Strip comments/spaces/new line and capitalize
         l_block = line.strip()
         c_line.append(len(l_block)+1) # Track number of characters in grbl serial read buffer
-        grbl_out = '' 
+        grbl_out = ''
         while sum(c_line) >= RX_BUFFER_SIZE-1 | s.inWaiting() :
             out_temp = s.readline().strip() # Wait for grbl response
-            if out_temp.find('ok') < 0 and out_temp.find('error') < 0 :
-                print "  Debug: ",out_temp # Debug response
+            if out_temp.find(b'ok') < 0 and out_temp.find(b'error') < 0 :
+                print("  Debug: ",out_temp) # Debug response
             else :
-                grbl_out += out_temp;
+                grbl_out += out_temp.decode(ENCODING);
                 g_count += 1 # Iterate g-code counter
-                grbl_out += str(g_count); # Add line finished indicator
+                grbl_out += str(g_count) # Add line finished indicator
                 del c_line[0] # Delete the block character count corresponding to the last 'ok'
-        if verbose: print "SND: " + str(l_count) + " : " + l_block,
-        s.write(l_block + '\n') # Send g-code block to grbl
-        if verbose : print "BUF:",str(sum(c_line)),"REC:",grbl_out
+        if verbose: print("SND: " + str(l_count) + " : " + l_block)
+        s.write(l_block.encode(ENCODING) + b'\n') # Send g-code block to grbl
+        if verbose : print("BUF:",str(sum(c_line)),"REC:",grbl_out)
 
 # Wait for user input after streaming is completed
-print "G-code streaming finished!\n"
-print "WARNING: Wait until grbl completes buffered g-code blocks before exiting."
-raw_input("  Press <Enter> to exit and disable grbl.") 
+print("G-code streaming finished!\n")
+print("WARNING: Wait until grbl completes buffered g-code blocks before exiting.")
+input("  Press <Enter> to exit and disable grbl.")
 
 # Close file and serial port
 f.close()
