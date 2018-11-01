@@ -75,11 +75,11 @@ def lines_to_gcode(lines: list, align='left'):
     gcodes = []
     for i, line in enumerate(lines):
         # horizontal alignment
-        if align is 'left':
+        if align == 'left':
             x = MARGIN
-        elif align is 'right':
+        elif align == 'right':
             x = SHEET_WIDTH - MARGIN - len(line)*CHAR_WIDTH
-        elif align is 'center':
+        elif align == 'center':
             x = MARGIN + (SHEET_WIDTH - 2*MARGIN - len(line)*CHAR_WIDTH)/2
 
         y = MARGIN + (i*LINE_SPACING + i)*CHAR_HEIGHT
