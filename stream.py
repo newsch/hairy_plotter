@@ -145,36 +145,36 @@ def write_gcode_file(f, s: serial.Serial):
 
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+# if __name__ == '__main__':
+#     logging.basicConfig(level=logging.DEBUG)
 
-    # Define command line argument interface
-    parser = argparse.ArgumentParser(description='Stream g-code file to grbl. (pySerial and argparse libraries required)')
-    parser.add_argument('gcode_file', type=argparse.FileType('r'),
-        help='g-code filename to be streamed')
-    parser.add_argument('device_file',
-        help='serial device path')
-    parser.add_argument('-q','--quiet',action='store_true', default=False,
-        help='suppress output text')
-    parser.add_argument('-s','--settings',action='store_true', default=False,
-        help='settings write mode')
-    args = parser.parse_args()
+#     # Define command line argument interface
+#     parser = argparse.ArgumentParser(description='Stream g-code file to grbl. (pySerial and argparse libraries required)')
+#     parser.add_argument('gcode_file', type=argparse.FileType('r'),
+#         help='g-code filename to be streamed')
+#     parser.add_argument('device_file',
+#         help='serial device path')
+#     parser.add_argument('-q','--quiet',action='store_true', default=False,
+#         help='suppress output text')
+#     parser.add_argument('-s','--settings',action='store_true', default=False,
+#         help='settings write mode')
+#     args = parser.parse_args()
 
-    if args.quiet : VERBOSE = False
-    if args.settings : SETTINGS_MODE = True
+#     if args.quiet : VERBOSE = False
+#     if args.settings : SETTINGS_MODE = True
 
-try:
-    # Initialize
-    s = initialize_connection(args.device_file)
-    f = args.gcode_file
-    logger.info('Printing file')
-    write_gcode_file(f, s)
-    logger.info('Finished printing file')
+# try:
+#     # Initialize
+#     s = initialize_connection(args.device_file)
+#     f = args.gcode_file
+#     logger.info('Printing file')
+#     write_gcode_file(f, s)
+#     logger.info('Finished printing file')
 
-finally:
-    # Close file, send halt message to printer, serial port
-    print('Halting printer')
-    s.write(b'\n!\n')
-    s.close()
+# finally:
+#     # Close file, send halt message to printer, serial port
+#     print('Halting printer')
+#     s.write(b'\n!\n')
+#     s.close()
 
-    f.close()
+#     f.close()

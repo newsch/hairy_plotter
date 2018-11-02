@@ -5,6 +5,8 @@ from os.path import isfile, join
 import subprocess
 import time
 
+import stream
+
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +35,12 @@ def print_file(filepath):
             print_command.returncode,
             print_command.stderr))
 
+def plot_file(filepath, s):
+    with open(filepath) as f:
+        stream.write_gcode_file(f, s)
 
-if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.DEBUG)
-
+def watch_folder(callback, *args, **kwargs):
     no_files = False  # flag to stop multiple checks
     while True:
         for folder in [DIR, FINISHED_DIR]:
@@ -53,7 +56,20 @@ if __name__ == '__main__':
             for filename in files_to_print:
                 cur_file = join(DIR, filename)
                 logger.info('Printing {!r}'.format(cur_file))
-                print_file(cur_file)
+                callback(cur_file, *args, **kwargs)
                 logger.info('Finished printing {!r}'.format(cur_file))
                 os.rename(cur_file, join(FINISHED_DIR, os.path.basename(cur_file)))  # move to finished directory
         time.sleep(2)
+
+
+if __name__ == '__main__':
+
+    logging.basicConfig(level=logging.DEBUG)
+
+    try:
+        s = stream.initialize_connection('/dev/ttyACM0')
+        watch_folder(plot_file, s)
+    finally:
+        print('Halting printer')
+        s.write(b'\n!\n')
+        s.close()
