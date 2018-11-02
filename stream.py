@@ -40,17 +40,25 @@ THE SOFTWARE.
 ---------------------
 """
 
-import serial
-import re
-import time
-import sys
 import argparse
+import logging
+import re
+import serial
+import sys
+import time
 # import threading
 
-RX_BUFFER_SIZE = 128
+
+logger = logging.getLogger(__name__)
+
+
+RX_BUFFER_SIZE = 32
 ENCODING = 'ascii'  # encoding to use over serial connection
 VERBOSE = True
 SETTINGS_MODE = False
+
+STATUS_PATTERN = "<(\w+)|.*>"
+STATUS_COMPILED = re.compile(STATUS_PATTERN)
 
 # Periodic timer to query for status reports
 # TODO: Need to track down why this doesn't restart consistently before a release.
@@ -66,7 +74,7 @@ def initialize_connection(device_path):
     print("Initializing grbl...")
     s.write(b"\r\n\r\n")
     # Wait for grbl to initialize and flush startup text in serial input
-    time.sleep(2)
+    time.sleep(4)
     s.flushInput()
     return s
 
@@ -114,20 +122,32 @@ def write_gcode_file(f, s: serial.Serial):
         s.write(l_block.encode(ENCODING) + b'\n') # Send g-code block to grbl
         if VERBOSE : print("BUF:",str(sum(c_line)),"REC:",grbl_out)
 
-    # while g_count < l_count:
-    #     while sum(c_line) >= RX_BUFFER_SIZE-1 | s.inWaiting() :
-    #         out_temp = s.readline().strip() # Wait for grbl response
-    #         if out_temp.find(b'ok') < 0 and out_temp.find(b'error') < 0 :
-    #             print("  Debug: ",out_temp) # Debug response
-    #         else:
-    #             grbl_out += out_temp.decode(ENCODING)
-    #             g_count += 1 # Iterate g-code counter
-    #             grbl_out += str(g_count) # Add line finished indicator
-    #             del c_line[0] # Delete the block character count corresponding to the last 'ok'
+    logger.info('Finished streaming file. Waiting for printer to finish')
+
+    state = ''
+    while state != 'Idle':
+        time.sleep(2)
+        s.write(b'?')
+        response = s.read(s.in_waiting).strip().decode(ENCODING)
+        match = STATUS_COMPILED.search(response)
+        if match is not None:
+            state = match.group(1)  # extract machine state
+            logger.debug('Parsed state {!r} with pattern {!r} from status {!r}'.format(
+                state,
+                STATUS_COMPILED.pattern,
+                response))
+        else:
+            logger.debug('Found no state with pattern {!r} in status {!r}'.format(
+                STATUS_COMPILED.pattern,
+                response))
+
+
 
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
     # Define command line argument interface
     parser = argparse.ArgumentParser(description='Stream g-code file to grbl. (pySerial and argparse libraries required)')
     parser.add_argument('gcode_file', type=argparse.FileType('r'),
@@ -147,16 +167,14 @@ try:
     # Initialize
     s = initialize_connection(args.device_file)
     f = args.gcode_file
+    logger.info('Printing file')
     write_gcode_file(f, s)
-
-    # Wait for user input after streaming is completed
-    print("G-code streaming finished!\n")
-    print("WARNING: Wait until grbl completes buffered g-code blocks before exiting.")
-    input("  Press <Enter> to exit and disable grbl.")
+    logger.info('Finished printing file')
 
 finally:
-    # Close file and serial port
-    f.close()
-    print('Stopping')
+    # Close file, send halt message to printer, serial port
+    print('Halting printer')
     s.write(b'\n!\n')
     s.close()
+
+    f.close()

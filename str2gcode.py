@@ -14,7 +14,7 @@ FONT_SCALE = 1.5
 FONT_BASE_WIDTH = 19  # in mm
 FONT_BASE_HEIGHT = 21  # in mm
 
-SHEET_WIDTH = 800  # in mm
+SHEET_WIDTH = 750  # in mm
 # SHEET_HEIGHT  # roller has no fixed height
 LINE_SPACING = 0.5  # in characters
 MARGIN = 25

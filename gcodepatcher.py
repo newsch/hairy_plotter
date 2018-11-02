@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 FEED_RATE = 9000
 PEN_PAUSE = 0.75  # time in seconds to pause when pen is moving up.down
-MARGIN = 50  # distance to move before next print
+MARGIN = 0  # distance to move before next print
 
 PEN_NUM = 1
 
@@ -166,7 +166,7 @@ def get_max_y(lines):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     import argparse
     parser = argparse.ArgumentParser()
@@ -203,14 +203,23 @@ if __name__ == "__main__":
         [new_lines.append(output) for output in outputs]
 
     HEADER = [  # commands to add at the beginning of the file
-        setfeed(FEED_RATE)
+        "G54",
+        setfeed(FEED_RATE),
+        "G10 L20 P1 X0 Y0 Z0",  # reset work coordinates
+        pendown(PEN_NUM),  # DEBUG
+        pause(PEN_PAUSE),
+        penup(),
+        pause(PEN_PAUSE),
     ]
 
     FOOTER = [  # commands to add at the end of the file
         penup(),
         pause(PEN_PAUSE),
-        move(0, get_max_y(new_lines)+MARGIN),
-        "G10 L20 P1 Y0"  # reset work coordinates
+        move(0, get_max_y(new_lines)),#+MARGIN),
+        "G10 L20 P1 X0 Y0 Z0",  # reset work coordinates
+        pendown(PEN_NUM),  # DEBUG
+        pause(PEN_PAUSE),
+        penup()  # DEBUG
     ]
 
     new_lines = [
@@ -218,5 +227,5 @@ if __name__ == "__main__":
         *new_lines,
         *FOOTER
     ]
-
+    logger.info('Writing {} lines of gcode'.format(len(new_lines)))
     args.outfile.write('\n'.join(new_lines)+'\n')
