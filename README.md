@@ -1,4 +1,4 @@
-# unnamed printer project
+# Hairy Plotter
 
 A collection of scripts and services for working with a cnc poster printer, including:
 - printing from sms messages
