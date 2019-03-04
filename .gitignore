@@ -1,3 +1,15 @@
+## Project-Specific
+.env
+
+*.gcode
+*.txt
+inbox/
+outbox/
+print-queue/
+
+
+## Python
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -79,9 +91,6 @@ celerybeat-schedule
 
 # SageMath parsed files
 *.sage.py
-
-# dotenv
-.env
 
 # virtualenv
 .venv
