@@ -19,10 +19,13 @@ The sms portion of this leans heavily on work from the Hacking the Library cours
 │   ├── receive_mqtt_messages.py
 │   └── send_mqtt_messages.py
 ├── print_worker.py - read from print-text queue and convert to gcode
+├── print_queue.py - print files (text or gcode) from a folder
 ├── send_sms_message.py - tool to send an sms message through twilio
+├── simple_stream.py - GRBL example script to stream gcode
 ├── sms_print_gateway.py - process sms queue and send to print-text queue
 ├── str2gcode.py - tool to convert text into gcode
-└── str2svg.py - tool to convert text into svgs
+├── str2svg.py - tool to convert text into svgs
+└── stream.py - modified GRBL script to stream gcode
 ```
 
 ## Install
@@ -93,6 +96,17 @@ To convert processed sms messages into gcode:
 ```
 python3 print_worker.py
 ```
+
+## CAM solutions
+
+- [Diego Monzon's G-Code Illustrator plugin](https://diegomonzon.com/illustrator-to-gcode/)
+- [PyCAM](https://github.com/SebKuzminsky/pycam) (I have yet to get this working)
+- `cam.py` - script from an MIT prof, Neil Gershenfeld [this is the latest version I found on the Wayback Machine](https://web.archive.org/web/20110829105018/http://web.media.mit.edu/~neilg/fab/dist/cam.py)
+- [`Fab Modules`](https://github.com/FabModules/fabmodules-html5), a similar project from the same person.
+
+- [cncjs](https://cnc.js.org/)
+- [Universal G-Code Sender](https://github.com/winder/Universal-G-Code-Sender)
+- more options on [the GRBL wiki](https://github.com/gnea/grbl/wiki/Using-Grbl#how-to-stream-g-code-programs-to-grbl)
 
 ## LICENSE
 
