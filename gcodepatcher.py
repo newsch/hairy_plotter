@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# TODO: allow separate pen configs
+# TODO: write test cases
+# TODO: factor out into gcode generation/parsing and cli for patching
+# TODO: factor and create configs for different program output (inkscape, illustrator plugin, gcodefont)
+# TODO: fix Regexs for commands with zero-padded numbers (G01 vs G1)
 import argparse
 import logging
 import re
@@ -7,16 +12,18 @@ import re
 logger = logging.getLogger(__name__)
 
 
-FEED_RATE = 9000
-PEN_PAUSE = 0.75  # time in seconds to pause when pen is moving up.down
+FEED_RATE = 20000
+ADVANCE = False  # move to end of line and reset axes
 MARGIN = 0  # distance to move before next print
 
 PEN_NUM = 1
 
 # servo positions
 PEN_UP = 525
-PEN_1_DOWN = 950
-PEN_2_DOWN = 1
+PEN_DOWN = 950
+# pauses
+PEN_DOWN_PAUSE = 0.4
+PEN_UP_PAUSE = 0.1
 
 
 HOME_PATTERN = "G0X0Y0"
@@ -31,12 +38,8 @@ FEED_TEMP = "F{}"
 def pause(time):
     return PAUSE_TEMP.format(time)
 
-def pendown(pen_num):
-    servo_val = {
-        1: PEN_1_DOWN,
-        2: PEN_2_DOWN
-    }[pen_num]
-    return PEN_MOVE_TEMP.format(servo_val)
+def pendown():
+    return PEN_MOVE_TEMP.format(PEN_DOWN)
 
 def penup():
     return PEN_MOVE_TEMP.format(PEN_UP)
@@ -60,18 +63,22 @@ Z_COMPILED = re.compile(Z_PATTERN)
 Z_LOWER = 0
 Z_UPPER = 1
 
-XY_PATTERN = "(G[01])[\w\d. ]*([XY]-?\d+.?\d*) ?([XY]-?\d+.?\d*)"
+XY_PATTERN = "(G0?[01])[\w\d. ]*([XY]-?\d+.?\d*) ?([XY]-?\d+.?\d*)"
 XY_COMPILED = re.compile(XY_PATTERN)
 
 # commands to remove inline
+# TODO: (optionally) strip inline comments
 STRIP_LIST = [
     re.compile('F'+SPEED_PATTERN),  # feed commands
-    # re.compile('P\d'),  # pause commands
+    # re.compile('G4 ?P\d'),  # pause commands
     re.compile('G[01] ?X0 ?Y0'),  # return home
 ]
 
+
 # commands to skip line when reading
+# TODO: switch to REGEX or skip/ignore spaces/case
 SKIP_LIST = [
+    "%",  # program start/end  TODO: start/stop parsing before/after these?
     "M6",  # tool change
     "G4 P",  # pause commands
     # movehome(),  # 0,0 return
@@ -113,11 +120,11 @@ def patch_z(line):
         if pre.strip() is not '':
             cmds.append(code+pre)
         if zmove <= Z_LOWER:
-            cmds.append(pendown(PEN_NUM))
-            cmds.append(pause(PEN_PAUSE))
+            cmds.append(pendown())
+            cmds.append(pause(PEN_DOWN_PAUSE))
         elif zmove >= Z_UPPER:
             cmds.append(penup())
-            cmds.append(pause(PEN_PAUSE))
+            cmds.append(pause(PEN_UP_PAUSE))
         if post.strip() is not '':
             cmds.append(code+post)
         return '\n'.join(cmds)
@@ -174,20 +181,24 @@ if __name__ == "__main__":
                         help='input file (use `-` for stdin)')
     parser.add_argument('outfile', type=argparse.FileType('w'),
                         help='output file (use `-` for stdout)')
-    parser.add_argument('-p', '--pen', type=int, choices=[1,2],
-                        help='pen number to use (default is {})'.format(PEN_NUM))
-    parser.add_argument('-pp', '--pen-pause', type=float,
-                        help='time to pause in seconds while moving pen up/down (default is {})'.format(PEN_PAUSE))
+    # parser.add_argument('-p', '--pen', type=int, choices=[1,2],
+    #                     help='pen number to use (default is {})'.format(PEN_NUM))
+    # parser.add_argument('-pp', '--pen-pause', type=float,
+    #                     help='time to pause in seconds while moving pen up/down (default is {})'.format(PEN_PAUSE))
+    parser.add_argument('-a', '--advance', action='store_true',
+                        help='reset coordinates after printing, useful for continuous printing')
     parser.add_argument('-m', '--margin', type=float,
-                        help='y distance to move after print (default is {})'.format(MARGIN))
+                        help='y distance to move after print (default is {}, ignored if advance is False)'.format(MARGIN))
     args = parser.parse_args()
 
-    if args.pen and PEN_NUM != args.pen:
-        PEN_NUM = args.pen
-    if args.margin and MARGIN != args.margin:
+    if args.margin is not None:
         MARGIN = args.margin
-    if args.pen_pause and PEN_PAUSE != args.pen_pause:
-        PEN_PAUSE = args.pen_pause
+    if args.advance is not None:
+        ADVANCE = args.advance
+    # if args.pen is not None and PEN_NUM != args.pen:
+    #     PEN_NUM = args.pen
+    # if args.pen_pause is not None and PEN_PAUSE != args.pen_pause:
+    #     PEN_PAUSE = args.pen_pause
 
     # modify gcode
     content = args.infile.read().splitlines()  # gcode as a list where each element is a line
@@ -206,21 +217,25 @@ if __name__ == "__main__":
         "G54",
         setfeed(FEED_RATE),
         "G10 L20 P1 X0 Y0 Z0",  # reset work coordinates
-        pendown(PEN_NUM),  # DEBUG
-        pause(PEN_PAUSE),
+        # pendown(),  # DEBUG
+        # pause(PEN_DOWN_PAUSE),
         penup(),
-        pause(PEN_PAUSE),
+        pause(PEN_UP_PAUSE),
     ]
 
     FOOTER = [  # commands to add at the end of the file
         penup(),
-        pause(PEN_PAUSE),
-        move(0, get_max_y(new_lines)),#+MARGIN),
-        "G10 L20 P1 X0 Y0 Z0",  # reset work coordinates
-        pendown(PEN_NUM),  # DEBUG
-        pause(PEN_PAUSE),
-        penup()  # DEBUG
+        pause(PEN_UP_PAUSE)
     ]
+    if ADVANCE:
+        FOOTER += [
+            move(0, get_max_y(new_lines)+MARGIN),
+            "G10 L20 P1 X0 Y0 Z0",  # reset work coordinates
+            # pendown(),  # DEBUG
+            # pause(PEN_DOWN_PAUSE),
+            # penup()  # DEBUG
+            # pause(PEN_UP_PAUSE)
+        ]
 
     new_lines = [
         *HEADER,
