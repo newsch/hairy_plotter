@@ -136,9 +136,9 @@ if __name__ == "__main__":
                         help='line spacing in character units (default: {})'.format(LINE_SPACING))
     args = parser.parse_args()
 
-    if args.scale:
+    if args.scale is not None:
         FONT_SCALE = args.scale
-    if args.line_spacing:
+    if args.line_spacing is not None:
         LINE_SPACING = args.line_spacing
 
     calculate_parameters()  # update params with command-line values
