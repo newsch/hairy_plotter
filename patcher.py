@@ -8,6 +8,7 @@ import argparse
 import logging
 import re
 
+import gcode as g
 
 logger = logging.getLogger(__name__)
 
@@ -25,33 +26,7 @@ PEN_DOWN = 850
 PEN_DOWN_PAUSE = 0.2
 PEN_UP_PAUSE = 0.1
 
-
-HOME_PATTERN = "G0X0Y0"
-
-MOVE_TEMP = "G0 X{} Y{}"
-
-PEN_MOVE_TEMP = "M03 S{}"  # template for pen movement
-PAUSE_TEMP = "G4 P{}"  # template for pausing (in seconds)
-
-FEED_TEMP = "F{}"
-
-def pause(time):
-    return PAUSE_TEMP.format(time)
-
-def pendown():
-    return PEN_MOVE_TEMP.format(PEN_DOWN)
-
-def penup():
-    return PEN_MOVE_TEMP.format(PEN_UP)
-
-def movehome():
-    return MOVE_TEMP.format(0, 0)
-
-def move(x,y):
-    return MOVE_TEMP.format(x,y)
-
-def setfeed(rate):
-    return FEED_TEMP.format(rate)
+pen = g.Pen(PEN_UP, PEN_DOWN, PEN_UP_PAUSE, PEN_DOWN_PAUSE)
 
 
 SPEED_PATTERN = "(-?\d+.?\d*)"  # general regex for getting commands
@@ -81,7 +56,6 @@ SKIP_LIST = [
     "%",  # program start/end  TODO: start/stop parsing before/after these?
     "M6",  # tool change
     "G4 P",  # pause commands
-    # movehome(),  # 0,0 return
 ]
 
 
@@ -113,20 +87,22 @@ def patch_z(line):
     def z_replace(matchobj):
         """Replace function for match object."""
         cmds = []
+        add = lambda a: cmds.append(a)
+
         code = matchobj.group(1)
         pre = matchobj.group(2)
         zmove = float(matchobj.group(3))
         post = matchobj.group(4)
         if pre.strip() is not '':
-            cmds.append(code+pre)
+            add(code+pre)
         if zmove <= Z_LOWER:
-            cmds.append(pendown())
-            cmds.append(pause(PEN_DOWN_PAUSE))
+            add('(pen down)')
+            add(pen.down())
         elif zmove >= Z_UPPER:
-            cmds.append(penup())
-            cmds.append(pause(PEN_UP_PAUSE))
+            add('(pen up)')
+            add(pen.up())
         if post.strip() is not '':
-            cmds.append(code+post)
+            add(code+post)
         return '\n'.join(cmds)
 
     if Z_COMPILED.match(line):
@@ -215,21 +191,19 @@ if __name__ == "__main__":
 
     HEADER = [  # commands to add at the beginning of the file
         "G54",
-        setfeed(FEED_RATE),
+        g.set_feed(FEED_RATE),
         "G10 L20 P1 X0 Y0 Z0",  # reset work coordinates
         # pendown(),  # DEBUG
         # pause(PEN_DOWN_PAUSE),
-        penup(),
-        pause(PEN_UP_PAUSE),
+        pen.up(),
     ]
 
     FOOTER = [  # commands to add at the end of the file
-        penup(),
-        pause(PEN_UP_PAUSE)
+        pen.up(),
     ]
     if ADVANCE:
         FOOTER += [
-            move(0, get_max_y(new_lines)+MARGIN),
+            g.move(0, get_max_y(new_lines)+MARGIN),
             "G10 L20 P1 X0 Y0 Z0",  # reset work coordinates
             # pendown(),  # DEBUG
             # pause(PEN_DOWN_PAUSE),
