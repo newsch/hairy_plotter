@@ -19,10 +19,10 @@ MARGIN = 0  # distance to move before next print
 PEN_NUM = 1
 
 # servo positions
-PEN_UP = 525
-PEN_DOWN = 950
+PEN_UP = 700
+PEN_DOWN = 850
 # pauses
-PEN_DOWN_PAUSE = 0.4
+PEN_DOWN_PAUSE = 0.2
 PEN_UP_PAUSE = 0.1
 
 
