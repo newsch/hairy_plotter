@@ -66,7 +66,7 @@ class Pen(object):
         self.down_pause = down_pause
 
     def _move(self, pos, add_pause, pause_time):
-        cmd = set_pen(self.down_pos)
+        cmd = set_pen(pos)
         if add_pause:
             cmd += '\n'+pause(pause_time)
         return cmd
@@ -80,18 +80,19 @@ class Pen(object):
 
 # shapes
 
-def rect(width, height):
+def rect(width, height, start=(0,0)):
     """Draw a rectangle clockwise from bottom-left."""
+    x, y = start
     return '\n'.join([
-        move(height),
-        move(width),
-        move(-height),
-        move(-width),
+        move(x, y + height),
+        move(x + width, y + height),
+        move(x + width, y),
+        move(x, y),
     ])
 
-def square(length):
+def square(length, start=(0,0)):
     """Draw a square clockwise from bottom-left."""
-    return rect(length, length)
+    return rect(length, length, start=start)
 
 def line(length, angle=0):
     """Draw a line, with angle measured counter-clockwise from right in degrees."""
