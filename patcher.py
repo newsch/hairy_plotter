@@ -17,14 +17,27 @@ FEED_RATE = 20000
 ADVANCE = False  # move to end of line and reset axes
 MARGIN = 0  # distance to move before next print
 
-PEN_NUM = 1
-
 # servo positions
 PEN_UP = 700
-PEN_DOWN = 850
+PEN_DOWN = 860
 # pauses
-PEN_DOWN_PAUSE = 0.2
+PEN_DOWN_PAUSE = 0.4
 PEN_UP_PAUSE = 0.1
+
+pens = {
+    "magnum": {
+        "up_pos": PEN_UP,
+        "down_pos": 860,
+        "up_pause": PEN_UP_PAUSE,
+        "down_pause": PEN_DOWN_PAUSE,
+    },
+    "regular": {
+        "up_pos": PEN_UP,
+        "down_pos": 715,
+        "up_pause": PEN_UP_PAUSE,
+        "down_pause": PEN_DOWN_PAUSE,
+    }
+}
 
 pen = g.Pen(PEN_UP, PEN_DOWN, PEN_UP_PAUSE, PEN_DOWN_PAUSE)
 
@@ -153,26 +166,24 @@ if __name__ == "__main__":
 
     import argparse
     parser = argparse.ArgumentParser()
+    parser.add_argument('pen', choices=pens.keys(),
+        help='pen to use'.format())
     parser.add_argument('infile', type=argparse.FileType('r'),
-                        help='input file (use `-` for stdin)')
+        help='input file (use `-` for stdin)')
     parser.add_argument('outfile', type=argparse.FileType('w'),
-                        help='output file (use `-` for stdout)')
-    # parser.add_argument('-p', '--pen', type=int, choices=[1,2],
-    #                     help='pen number to use (default is {})'.format(PEN_NUM))
-    # parser.add_argument('-pp', '--pen-pause', type=float,
-    #                     help='time to pause in seconds while moving pen up/down (default is {})'.format(PEN_PAUSE))
+        help='output file (use `-` for stdout)')
     parser.add_argument('-a', '--advance', action='store_true',
-                        help='reset coordinates after printing, useful for continuous printing')
+        help='reset coordinates after printing, useful for continuous printing')
     parser.add_argument('-m', '--margin', type=float,
-                        help='y distance to move after print (default is {}, ignored if advance is False)'.format(MARGIN))
+        help='y distance to move after print (default is {}, ignored if advance is False)'.format(MARGIN))
     args = parser.parse_args()
 
     if args.margin is not None:
         MARGIN = args.margin
     if args.advance is not None:
         ADVANCE = args.advance
-    # if args.pen is not None and PEN_NUM != args.pen:
-    #     PEN_NUM = args.pen
+    if args.pen is not None:
+        pen = g.Pen(**pens.get(args.pen))
     # if args.pen_pause is not None and PEN_PAUSE != args.pen_pause:
     #     PEN_PAUSE = args.pen_pause
 

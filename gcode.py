@@ -59,9 +59,9 @@ def set_pen(pos):
 
 class Pen(object):
 
-    def __init__(self, up: int, down: int, up_pause: float = 1, down_pause: float = 1):
-        self.up_pos = up
-        self.down_pos = down
+    def __init__(self, up_pos: int, down_pos: int, up_pause: float = 1, down_pause: float = 1):
+        self.up_pos = up_pos
+        self.down_pos = down_pos
         self.up_pause = up_pause
         self.down_pause = down_pause
 
@@ -76,7 +76,6 @@ class Pen(object):
 
     def down(self, pause=True):
         return self._move(self.down_pos, pause, self.down_pause)
-
 
 # shapes
 
