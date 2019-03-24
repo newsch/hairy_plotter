@@ -1,10 +1,27 @@
 #!/usr/bin/env python3
-import gcode as g
+from typing import List, Dict, Tuple, NamedTuple, Generator, Mapping, Iterable
 
 import matplotlib.pyplot as plt
 
+import gcode as g
 
-def parse_hershey_file(f):
+
+Coordinate = Tuple[int, int]
+Path = List[Coordinate]
+Charpath = List[Path]
+
+class Glyph(NamedTuple):
+    left: int
+    right: int
+    paths: Charpath
+    # box: Tuple[Coordinate, Coordinate]
+    # width: int
+    # height: int
+
+Charmap = Mapping[str, Glyph]
+
+
+def parse_hershey_file(f) -> Generator[Tuple[int, Glyph], None, None]:
 
     ctoi = lambda a: ord(a) - ord('R')
 
@@ -13,7 +30,7 @@ def parse_hershey_file(f):
         num_vertices = int(code[4:7].strip())
         left = ctoi(code[7])
         right = ctoi(code[8])
-        return char_num, num_vertices-1  # return the number of vertices - left/right pair
+        return char_num, num_vertices-1, left, right  # return the number of vertices - left/right pair
 
     def parse_hershey_char_paths(num_vertices, f):
         paths = []
@@ -39,12 +56,12 @@ def parse_hershey_file(f):
         info_line = f.read(9)
         if info_line == '':  # exit on EOF
             break
-        char_num, num_vertices = parse_hershey_char_info(info_line)
+        char_num, num_vertices, l, r = parse_hershey_char_info(info_line)
         paths = parse_hershey_char_paths(num_vertices, f)
-        yield char_num, paths
+        yield char_num, Glyph(l, r, paths)
 
 
-def make_ascii_charcode_map(hmap: str):
+def make_ascii_charcode_map(hmap: str) -> Mapping[str, int]:
     paths = hmap.split()
     charcode_to_ord = {}
     i = 32
@@ -63,14 +80,65 @@ def make_ascii_charcode_map(hmap: str):
     return charcode_to_ord
 
 
-def plot_charpath(charpath):
-    for p in charpath:
-        x, y = zip(*p)
-        plt.plot(x, y)
+def plot_charpath(charpath: Charpath, x_offset: int = 0, y_offset: int = 0):
+    plot_paths(map(lambda p: offset_path(p, x_offset, y_offset), charpath))
+
+
+def plot_glyph(g: Glyph, start: Coordinate = (0, 0)):
+    x, y = start
+    plot_charpath(g.paths, x - g.left, y)
+
+
+def plot_str(cmap: Charmap, txt: str, start: Coordinate = (0, 0)):
+    char_start = list(start)
+    for c in txt:
+        g = cmap[c]
+        plot_glyph(g, start=char_start)
+        char_start[0] += g.right - g.left
+
+
+# generic path functions
+
+
+def plot_paths(paths: Iterable[Path]):
+    for p in paths:
+        if p:
+            x, y = zip(*p)
+            plt.plot(x, y)
     plt.axis('equal')
 
 
-def calc_dimensions(charpath):
+def glyph_to_paths(g: Glyph, start: Coordinate = (0, 0)):
+    x, y = start
+    paths = []
+    for p in g.paths:
+        paths.append(offset_path(p, x - g.left, y))
+    return paths
+
+
+def offset_path(p: Path, x_offset: int = 0, y_offset: int = 0):
+    return [(c[0] + x_offset, c[1] + y_offset) for c in p]
+
+
+def scale_path(p: Path, scale: float):
+    """Scales from (0, 0)."""
+    return [(c[0] * scale, c[1] * scale) for c in p]
+
+
+def str_to_paths(cmap: Charmap,
+                 txt: str,
+                 start: Coordinate = (0, 0),
+                 scale: float = 1) -> List[Path]:
+    paths = []
+    char_start = list(start)
+    for c in txt:
+        g = cmap[c]
+        paths.extend(glyph_to_paths(g, char_start))
+        char_start[0] += g.right - g.left
+    return list(map(lambda p: scale_path(p, scale), paths))
+
+
+def calc_dimensions(paths: Iterable[Path]) -> Tuple[int, int]:
     xs, ys = zip(*sum(charpath, []))
     width = max(xs) - min(xs)
     height = max(ys) - min(ys)
