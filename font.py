@@ -128,13 +128,29 @@ def scale_path(p: Path, scale: float):
 def str_to_paths(cmap: Charmap,
                  txt: str,
                  start: Coordinate = (0, 0),
-                 scale: float = 1) -> List[Path]:
+                 scale: float = 1,
+                 wrap: float = -1,
+                 line_height = 20) -> List[Path]:
+    """Create paths from text.
+
+    Wraps naively on character width (doesn't take words or whitespace into account).
+    """
+    x_start, y_start = start
+    local_w = wrap / scale  # account for scale when wrapping
     paths = []
-    char_start = list(start)
+    # relative coordinates
+    x = 0
+    y = 0
     for c in txt:
         g = cmap[c]
-        paths.extend(glyph_to_paths(g, char_start))
-        char_start[0] += g.right - g.left
+        if wrap > 0:
+            w = g.right - g.left
+            if x + w > local_w:
+                # new_line
+                x = 0
+                y -= line_height
+        paths.extend(glyph_to_paths(g, (x, y)))
+        x += g.right - g.left
     return list(map(lambda p: scale_path(p, scale), paths))
 
 
