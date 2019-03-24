@@ -81,7 +81,7 @@ def make_ascii_charcode_map(hmap: str) -> Mapping[str, int]:
 
 
 def plot_charpath(charpath: Charpath, x_offset: int = 0, y_offset: int = 0):
-    plot_paths(map(lambda p: offset_path(p, x_offset, y_offset), charpath))
+    plot_paths(offset_paths(charpath, x_offset, y_offset))
 
 
 def plot_glyph(g: Glyph, start: Coordinate = (0, 0)):
@@ -125,6 +125,15 @@ def scale_path(p: Path, scale: float):
     return [(c[0] * scale, c[1] * scale) for c in p]
 
 
+def offset_paths(paths: Iterable[Path], x_offset: int = 0, y_offset: int = 0):
+    return map(lambda p: offset_path(p, x_offset, y_offset), paths)
+
+
+def scale_paths(paths: Iterable[Path], scale: float):
+    """Scales from (0, 0)."""
+    return map(lambda p: scale_path(p, scale), paths)
+
+
 def str_to_paths(cmap: Charmap,
                  txt: str,
                  start: Coordinate = (0, 0),
@@ -151,7 +160,7 @@ def str_to_paths(cmap: Charmap,
                 y -= line_height
         paths.extend(glyph_to_paths(g, (x, y)))
         x += g.right - g.left
-    return list(map(lambda p: scale_path(p, scale), paths))
+    return list(scale_paths(paths, scale))
 
 
 def calc_dimensions(paths: Iterable[Path]) -> Tuple[int, int]:
