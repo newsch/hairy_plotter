@@ -163,8 +163,60 @@ def str_to_paths(cmap: Charmap,
     return list(scale_paths(paths, scale))
 
 
+def format_txt(cmap: Charmap,
+               txt: str,
+               lheight: float,
+               width: float,
+               align: str = 'left',):
+    # TODO: wrap long words
+    # TODO: align text
+    # TODO: figure out scale/start
+    # TODO: figure out char height
+    widths = {c: (g.right - g.left) for c, g in cmap.items()}
+    def str_length(txt: str):
+        return sum((widths[c] for c in txt))
+
+    def output_lines(lines: List[str]):
+        dx = 0
+        dy = 0
+        output = []
+        for l in lines:
+            w = str_length(l)
+            gap = width - w
+            if align == 'left':
+                dx = 0
+            elif align == 'right':
+                dx = gap
+            elif align == 'center':
+                dx = gap / 2
+            output.extend(offset_paths(
+                str_to_paths(cmap, l), dx, dy))
+            dy += lheight
+        return output
+
+    words = txt.split()
+    lines = []
+    line = []
+    llength = 0
+    for w in words:
+        wlength = str_length(w)
+        if llength + wlength > width:
+            # add line, reset
+            lines.append(' '.join(line))
+            llength = wlength
+            line = [w]
+        else:
+            line.append(w)
+            llength += wlength
+    # add final line
+    if line:
+        lines.append(' '.join(line))
+    lines.reverse()
+    return output_lines(lines)
+
+
 def calc_dimensions(paths: Iterable[Path]) -> Tuple[int, int]:
-    xs, ys = zip(*sum(charpath, []))
+    xs, ys = zip(*sum(paths, []))
     width = max(xs) - min(xs)
     height = max(ys) - min(ys)
     return width, height
