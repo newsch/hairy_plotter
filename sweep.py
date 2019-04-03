@@ -16,10 +16,10 @@ def sweep_feeds(r: range, length: float = 10) -> g.CmdList:
 def sweep_heights(r: range, length: float = 20, safe_height: int = 500) -> g.CmdList:
     cmds = []
     add = lambda a: cmds.append(a)
-    
+
     add(g.set_feed(20000))
     for i, height in enumerate(r):
-        pen = g.Pen(safe_height, height)
+        pen = g.Pen(safe_height, height, up_pause=1)
         base = (i*length*2, 0)
         add(pen.up())
         add('(Sweep {}: {})'.format(i+1, height))

@@ -170,7 +170,8 @@ def format_txt(cmap: Charmap,
                align: str = 'left',
                justify: bool = False):
     # TODO: wrap long words
-    # TODO: align text
+    # TODO: align text on last lines
+    # TODO: align text to bottom
     # TODO: figure out scale/start
     # TODO: figure out char height
     widths = {c: (g.right - g.left) for c, g in cmap.items()}
@@ -246,6 +247,27 @@ def calc_dimensions(paths: Iterable[Path]) -> Tuple[int, int]:
     width = max(xs) - min(xs)
     height = max(ys) - min(ys)
     return width, height
+
+
+def paths2gcode(paths: Iterable[Path], pen: g.Pen) -> g.CmdList:
+    out = []
+    for path in paths:
+        if path:
+            out.extend(path2gcode(path, pen))
+    return out
+
+
+def path2gcode(path: Path, pen: g.Pen) -> g.CmdList:
+    out = []
+    add = lambda a: out.append(a)
+    for i, point in enumerate(path):
+        if i == 0:
+            add(g.move_rapid(*point))
+            add(pen.down())
+        else:
+            add(g.move(*point))
+    add(pen.up())
+    return out
 
 
 if __name__ == "__main__":

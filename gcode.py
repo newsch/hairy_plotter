@@ -17,6 +17,11 @@ CmdList = List[str]
 #         self.add(other)
 
 
+def save(fpath, cmds: CmdList):
+    with open(fpath, 'w') as f:
+        f.writelines(cmds)
+
+
 # "standard" commands
 
 def pause(seconds):
