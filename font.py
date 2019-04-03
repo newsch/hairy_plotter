@@ -165,33 +165,31 @@ def str_to_paths(cmap: Charmap,
 
 def format_txt(cmap: Charmap,
                txt: str,
-               lheight: float,
+               line_height: float,
                width: float,
-               align: str = 'left',):
+               align: str = 'left',
+               justify: bool = False):
     # TODO: wrap long words
     # TODO: align text
     # TODO: figure out scale/start
     # TODO: figure out char height
     widths = {c: (g.right - g.left) for c, g in cmap.items()}
-    def str_length(txt: str):
+    def str_length(txt: str) -> int:
         return sum((widths[c] for c in txt))
 
     def output_lines(lines: List[str]):
-        dx = 0
-        dy = 0
+        # adjust paths horizontally
+        line_paths = []
+        justify_func = lambda words: justify_paths([str_to_paths(cmap, w) for w in words], width)
+        align_func = lambda words: align_path(str_to_paths(cmap, ' '.join(words)), width, align)
+
+        line_paths.extend(map(
+            justify_func if justify else align_func, lines))
+        # adjust paths vertically
         output = []
-        for l in lines:
-            w = str_length(l)
-            gap = width - w
-            if align == 'left':
-                dx = 0
-            elif align == 'right':
-                dx = gap
-            elif align == 'center':
-                dx = gap / 2
-            output.extend(offset_paths(
-                str_to_paths(cmap, l), dx, dy))
-            dy += lheight
+        for i, l in enumerate(line_paths):
+            output.extend(offset_paths(l, 0, line_height * i))
+
         return output
 
     words = txt.split()
@@ -202,7 +200,7 @@ def format_txt(cmap: Charmap,
         wlength = str_length(w)
         if llength + wlength > width:
             # add line, reset
-            lines.append(' '.join(line))
+            lines.append(line)
             llength = wlength
             line = [w]
         else:
@@ -210,9 +208,37 @@ def format_txt(cmap: Charmap,
             llength += wlength
     # add final line
     if line:
-        lines.append(' '.join(line))
+        lines.append(line)
     lines.reverse()
     return output_lines(lines)
+
+
+def align_path(p: Path, width: float, align: str):
+    dx = 0
+    w, _ = calc_dimensions(p)
+    gap = width - w
+    if align == 'left':
+        dx = 0
+    elif align == 'right':
+        dx = gap
+    elif align == 'center':
+        dx = gap / 2
+    return offset_paths(p, dx)
+
+
+def justify_paths(paths: List[Path], width: float):
+    widths = [w for w, _ in map(calc_dimensions, paths)]
+    num_paths = len(paths)
+    total_width = sum(widths)
+    gap = width - total_width
+    step = gap / (num_paths - 1)
+
+    output = []
+    dx = 0
+    for p, w in zip(paths, widths):
+        output.extend(offset_paths(p, dx))
+        dx += w + step
+    return output
 
 
 def calc_dimensions(paths: Iterable[Path]) -> Tuple[int, int]:
