@@ -5,12 +5,16 @@ import math
 import gcode as g
 
 
-def sweep_feeds(r: range, length: float = 10) -> g.CmdList:
+def sweep_feeds(r: range, pen: g.Pen, length: float = 700, sep: float = 20) -> g.CmdList:
     cmds = []
     add = lambda a: cmds.append(a)
     for i, feed in enumerate(r):
-        add(g.move_rapid(i*length, 0))
-        add(g.move(0, length, f=feed))
+        ypos = i * sep
+        add('(Sweep {}: {})'.format(i+1, feed))
+        add(g.move_rapid(0, ypos))
+        add(pen.down())
+        add(g.move(length, ypos, f=feed))
+        add(pen.up())
     return cmds
 
 def sweep_heights(r: range, length: float = 20, safe_height: int = 500) -> g.CmdList:
@@ -34,7 +38,7 @@ cmdlist2str = lambda c: '\n'.join(c)
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser('sweep')
-    parser.add_argument('param', choices=['feed', 'height'])
+    parser.add_argument('param', choices=['feed', 'height', 'feed'])
     parser.add_argument('lower', type=int)
     parser.add_argument('upper', type=int)
     sequencing = parser.add_mutually_exclusive_group()
@@ -53,7 +57,7 @@ if __name__ == '__main__':
 
     r = range(args.lower, args.upper, step)
     if args.param == 'feed':
-        cmds = sweep_feeds(r)
+        cmds = sweep_feeds(r, g.Pen(500, 750))
     elif args.param == 'height':
         cmds = sweep_heights(r)
 
