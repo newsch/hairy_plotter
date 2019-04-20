@@ -24,6 +24,12 @@ PEN_DOWN = 860
 PEN_DOWN_PAUSE = 0.4
 PEN_UP_PAUSE = 0.1
 
+PEN_LEVEL = 500  # level position for pens (the pair on the servo is level)
+PEN_SPEED = 900 / 0.7  # vertical speed for pen, PWM steps / seconds, used for calculating pauses
+
+def get_pause(position, level_position=PEN_LEVEL):
+    return abs(position - level_position) / PEN_SPEED
+
 pens = {
     "magnum": {
         "up_pos": PEN_UP,
@@ -182,10 +188,12 @@ if __name__ == "__main__":
         MARGIN = args.margin
     if args.advance is not None:
         ADVANCE = args.advance
+
+    # set pen
     if args.pen is not None:
         pen = g.Pen(**pens.get(args.pen))
-    # if args.pen_pause is not None and PEN_PAUSE != args.pen_pause:
-    #     PEN_PAUSE = args.pen_pause
+    elif args.down_pos is not None:
+        pen = g.Pen(PEN_LEVEL, args.down_pos, get_pause(args.down_pos), get_pause(args.down_pos))
 
     # modify gcode
     content = args.infile.read().splitlines()  # gcode as a list where each element is a line
