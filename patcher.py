@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# TODO: allow separate pen configs
-# TODO: write test cases
-# TODO: factor out into gcode generation/parsing and cli for patching
-# TODO: factor and create configs for different program output (inkscape, illustrator plugin, gcodefont)
-# TODO: fix Regexs for commands with zero-padded numbers (G01 vs G1)
+"""Fix gcode files to conform to plotter and GRBL needs.
+TODO: write test cases
+TODO: factor out into gcode generation/parsing and cli for patching
+TODO: factor and create configs for different program output (inkscape, illustrator plugin, gcodefont)
+TODO: fix Regexs for commands with zero-padded numbers (G01 vs G1)
+"""
 import argparse
 import logging
 import re
@@ -27,21 +28,25 @@ PEN_UP_PAUSE = 0.1
 PEN_LEVEL = 500  # level position for pens (the pair on the servo is level)
 PEN_SPEED = 900 / 0.7  # vertical speed for pen, PWM steps / seconds, used for calculating pauses
 
-def get_pause(position, level_position=PEN_LEVEL):
-    return abs(position - level_position) / PEN_SPEED
+def get_pause(position, level_position=PEN_LEVEL, speed=PEN_SPEED):
+    """Calculate the time for the pen to travel a distance."""
+    return abs(position - level_position) / speed
 
 pens = {
     "magnum": {
-        "up_pos": PEN_UP,
-        "down_pos": 860,
-        "up_pause": PEN_UP_PAUSE,
-        "down_pause": PEN_DOWN_PAUSE,
+        # "up_pos": PEN_LEVEL,
+        "down_pos": 750,
+        # "up_pause": get_pause,
+        # "down_pause": PEN_DOWN_PAUSE,
     },
     "regular": {
-        "up_pos": PEN_UP,
-        "down_pos": 715,
-        "up_pause": PEN_UP_PAUSE,
-        "down_pause": PEN_DOWN_PAUSE,
+        # "up_pos": PEN_LEVEL,
+        "down_pos": 710,
+        # "up_pause": PEN_UP_PAUSE,
+        # "down_pause": PEN_DOWN_PAUSE,
+    },
+    "sakura": {
+        "down_pos": 800
     }
 }
 
@@ -172,8 +177,10 @@ if __name__ == "__main__":
 
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('pen', choices=pens.keys(),
-        help='pen to use'.format())
+    pen_group = parser.add_mutually_exclusive_group(required=True);
+    pen_group.add_argument('-p', '--pen', type=str, choices=pens.keys(),
+        help='pen preset to use'.format())
+    pen_group.add_argument('-d', '--down-pos', type=int, help='Manually set a down position')
     parser.add_argument('infile', type=argparse.FileType('r'),
         help='input file (use `-` for stdin)')
     parser.add_argument('outfile', type=argparse.FileType('w'),
@@ -191,7 +198,13 @@ if __name__ == "__main__":
 
     # set pen
     if args.pen is not None:
-        pen = g.Pen(**pens.get(args.pen))
+        p = pens.get(args.pen)
+        pause = get_pause(p["down_pos"])
+        pen = g.Pen(
+            down_pos=p["down_pos"],
+            up_pos=p.get("up_pos", PEN_LEVEL),
+            down_pause=p.get("down_pause", pause),
+            up_pause=p.get("up_pause", pause))
     elif args.down_pos is not None:
         pen = g.Pen(PEN_LEVEL, args.down_pos, get_pause(args.down_pos), get_pause(args.down_pos))
 
