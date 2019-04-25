@@ -74,7 +74,7 @@ STRIP_LIST = [
 SKIP_LIST = [
     "%",  # program start/end  TODO: start/stop parsing before/after these?
     "M6",  # tool change
-    "G4 P",  # pause commands
+    # "G4 P",  # pause commands
 ]
 
 
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     HEADER = [  # commands to add at the beginning of the file
         "G54",
         g.set_feed(FEED_RATE),
-        "G10 L20 P1 X0 Y0 Z0",  # reset work coordinates
+        # "G10 L20 P1 X0 Y0 Z0",  # reset work coordinates
         # pendown(),  # DEBUG
         # pause(PEN_DOWN_PAUSE),
         pen.up(),
