@@ -29,7 +29,7 @@ def save(fpath: str, cmds: CmdList):
 # "standard" commands
 
 def pause(seconds: float) -> Cmd:
-    return "G4 P{}".format(seconds)
+    return "G4 P{:.2f}".format(seconds)
 
 def set_spindle(rate: int) -> Cmd:
     return "M3 S{}".format(rate)
@@ -44,13 +44,21 @@ def _build_xyz(x=None, y=None, z=None):
         (y, 'Y'),
         (z, 'Z')):
         if var is not None:
-            cmd += ' {}{:.6f}'.format(code, var)
+            cmd += ' {}{:.2f}'.format(code, var)
     return cmd
 
 def move_rapid(x: float = None, y: float = None, z: float = None) -> Cmd:
+    """G0 move command."""
     return 'G0' + _build_xyz(x, y, z)
 
 def move(x: float = None, y: float = None, z: float = None, f: int = None) -> Cmd:
+    """G1 move linearly command.
+
+    >>> move(1, 0)
+    'G1 X1.00 Y0.00'
+    >>> move(y=1/3)
+    'G1 Y0.33'
+    """
     cmd = 'G1' + _build_xyz(x, y, z)
     if f is not None:
         cmd += ' {}{}'.format('F', f)
