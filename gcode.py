@@ -1,8 +1,12 @@
 """Library of gcode commands and related structures."""
 import math
-from typing import List
+from typing import List, Tuple, Iterable
 
-CmdList = List[str]
+
+# Type definitions
+Cmd = str
+CmdList = Iterable[Cmd]
+Coord = Tuple[float, float]
 
 # class CmdList(list):
 
@@ -17,20 +21,20 @@ CmdList = List[str]
 #         self.add(other)
 
 
-def save(fpath, cmds: CmdList):
+def save(fpath: str, cmds: CmdList):
     with open(fpath, 'w') as f:
         f.writelines(cmds)
 
 
 # "standard" commands
 
-def pause(seconds):
+def pause(seconds: float) -> Cmd:
     return "G4 P{}".format(seconds)
 
-def set_spindle(rate):
+def set_spindle(rate: int) -> Cmd:
     return "M3 S{}".format(rate)
 
-def set_feed(feed):
+def set_feed(feed: int) -> Cmd:
     return "F{}".format(feed)
 
 def _build_xyz(x=None, y=None, z=None):
@@ -43,22 +47,22 @@ def _build_xyz(x=None, y=None, z=None):
             cmd += ' {}{:.6f}'.format(code, var)
     return cmd
 
-def move_rapid(x=None, y=None, z=None):
+def move_rapid(x: float = None, y: float = None, z: float = None) -> Cmd:
     return 'G0' + _build_xyz(x, y, z)
 
-def move(x=None, y=None, z=None, f=None):
+def move(x: float = None, y: float = None, z: float = None, f: int = None) -> Cmd:
     cmd = 'G1' + _build_xyz(x, y, z)
     if f is not None:
         cmd += ' {}{}'.format('F', f)
     return cmd
 
-def rapid_home():
+def rapid_home() -> Cmd:
     return move_rapid(0, 0, 0)
 
 
 # plotter-specific commands
 
-def set_pen(pos):
+def set_pen(pos: int) -> Cmd:
     return set_spindle(pos)
 
 
@@ -70,21 +74,21 @@ class Pen(object):
         self.up_pause = up_pause
         self.down_pause = down_pause
 
-    def _move(self, pos, add_pause, pause_time):
+    def _move(self, pos: int, add_pause: bool, pause_time: float) -> Cmd:
         cmd = set_pen(pos)
         if add_pause:
             cmd += '\n'+pause(pause_time)
         return cmd
 
-    def up(self, pause=True):
+    def up(self, pause: bool = True) -> Cmd:
         return self._move(self.up_pos, pause, self.up_pause)
 
-    def down(self, pause=True):
+    def down(self, pause: bool = True) -> Cmd:
         return self._move(self.down_pos, pause, self.down_pause)
 
 # shapes
 
-def rect(width, height, start=(0,0)):
+def rect(width: float, height: float, start: Coord = (0,0)) -> str:
     """Draw a rectangle clockwise from bottom-left."""
     x, y = start
     return '\n'.join([
@@ -94,11 +98,11 @@ def rect(width, height, start=(0,0)):
         move(x, y),
     ])
 
-def square(length, start=(0,0)):
+def square(length: float, start: Coord = (0,0)) -> str:
     """Draw a square clockwise from bottom-left."""
     return rect(length, length, start=start)
 
-def line(length, angle=0):
+def line(length, angle=0) -> str:
     """Draw a line, with angle measured counter-clockwise from right in degrees."""
     return move(
         (length * math.cos(math.radians(angle))),
