@@ -11,6 +11,7 @@ import re
 
 import gcode as g
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,7 +47,7 @@ pens = {
         # "down_pause": PEN_DOWN_PAUSE,
     },
     "sakura": {
-        "down_pos": 800
+        "down_pos": 200
     }
 }
 
@@ -57,13 +58,21 @@ SPEED_PATTERN = "(-?\d+.?\d*)"  # general regex for getting commands
 
 # match on G0/G1 commands with Z settings
 # https://regexr.com/4222s
-Z_PATTERN = "(G[01]) ?([\w\d.]*)Z(-?\d+.?\d*)([\w\d.]*)"
+Z_PATTERN = "([Gg]0?[01]) ?([\w\d.]*)Z(-?\d+.?\d*)([\w\d.]*)"
 Z_COMPILED = re.compile(Z_PATTERN)
 Z_LOWER = 0
 Z_UPPER = 1
 
-XY_PATTERN = "(G0?[01])[\w\d. ]*([XY]-?\d+.?\d*) ?([XY]-?\d+.?\d*)"
-XY_COMPILED = re.compile(XY_PATTERN)
+# https://regexr.com/4222s
+# Group 1: G command, e.g. "G1", "g 00"
+# Group 2: G
+# Group 3: 0 or 1
+# Groups 4-12: 3 sets of axis-value pairs:
+#  axis-value pair group 1: full command, e.g. "X 123.456"
+#  axis-value pair group 2: axis, e.g. "X", "y"
+#  axis-value pair group 3: value, e.g. "1", "123", "123.456"
+XYZ_PATTERN = "(([Gg]) *0?([01])) *(([XxYyZz]) *(-?\d+.?\d*)) *(([XxYyZz]) *(-?\d+.?\d*))? *(([XxYyZz]) *(-?\d+.?\d*))?"
+XYZ_COMPILED = re.compile(XYZ_PATTERN)
 
 # commands to remove inline
 # TODO: (optionally) strip inline comments
@@ -140,6 +149,36 @@ def patch_z(line):
     else:
         return [line]
 
+
+def scale(line: str, x_scale: float, y_scale: float) -> g.CmdList:
+    """Scale the x and y axes of G0 and G1 commands.
+
+    >>> scale("g01 X7.5 Y100", 2, 3)
+    ['G1 X15.00 Y300.00']
+    """
+    match = XYZ_COMPILED.match(line.lstrip())
+    if match is None:
+        return [line]
+    
+    coordinates = {'x': None, 'y': None, 'z': None}
+
+    for string, a, v in (match.group(*range(i, i+3)) for i in range(4, 12, 3)):
+        if string is not None:
+            axis = a.lower()
+            value = float(v)
+            if axis == 'x':
+                coordinates['x'] = value * x_scale
+            elif axis == 'y':
+                coordinates['y'] = value * y_scale
+    move_type = int(match.group(3))
+    if move_type == 0:
+        return [g.move_rapid(**coordinates)]
+    elif move_type == 1:
+        return [g.move(**coordinates)]
+    else:
+        raise ValueError("Couldn't match G command: {!r}".format(line))
+
+
 PROCESS_ORDER = [  # functions to use and the order to use them in
     skip_commands,
     strip_commands,
@@ -189,6 +228,7 @@ if __name__ == "__main__":
         help='reset coordinates after printing, useful for continuous printing')
     parser.add_argument('-m', '--margin', type=float,
         help='y distance to move after print (default is {}, ignored if advance is False)'.format(MARGIN))
+    parser.add_argument('-s', '--scale', type=float, help="Scale gcode coordinates.")
     args = parser.parse_args()
 
     if args.margin is not None:
@@ -207,6 +247,9 @@ if __name__ == "__main__":
             up_pause=p.get("up_pause", pause))
     elif args.down_pos is not None:
         pen = g.Pen(PEN_LEVEL, args.down_pos, get_pause(args.down_pos), get_pause(args.down_pos))
+    
+    if args.scale is not None:
+        PROCESS_ORDER.append(lambda l: scale(l, args.scale, args.scale))
 
     # modify gcode
     content = args.infile.read().splitlines()  # gcode as a list where each element is a line
@@ -236,7 +279,7 @@ if __name__ == "__main__":
     if ADVANCE:
         FOOTER += [
             g.move(0, get_max_y(new_lines)+MARGIN),
-            "G10 L20 P1 X0 Y0 Z0",  # reset work coordinates
+            # "G10 L20 P1 X0 Y0 Z0",  # reset work coordinates
             # pendown(),  # DEBUG
             # pause(PEN_DOWN_PAUSE),
             # penup()  # DEBUG
