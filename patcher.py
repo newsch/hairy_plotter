@@ -4,6 +4,8 @@ TODO: write test cases
 TODO: factor out into gcode generation/parsing and cli for patching
 TODO: factor and create configs for different program output (inkscape, illustrator plugin, gcodefont)
 TODO: fix Regexs for commands with zero-padded numbers (G01 vs G1)
+TODO: figure out oddities of scale/patch_z interaction
+TODO: spec out switching to a stateful char-by-char patcher ala GRBL
 """
 import argparse
 import logging
@@ -150,7 +152,7 @@ def patch_z(line):
         return [line]
 
 
-def scale(line: str, x_scale: float, y_scale: float) -> g.CmdList:
+def scale(line: str, x_scale: float, y_scale: float, z_scale: float) -> g.CmdList:
     """Scale the x and y axes of G0 and G1 commands.
 
     >>> scale("g01 X7.5 Y100", 2, 3)
@@ -170,13 +172,17 @@ def scale(line: str, x_scale: float, y_scale: float) -> g.CmdList:
                 coordinates['x'] = value * x_scale
             elif axis == 'y':
                 coordinates['y'] = value * y_scale
+            elif axis == 'z':
+                coordinates['z'] = value * z_scale
     move_type = int(match.group(3))
     if move_type == 0:
-        return [g.move_rapid(**coordinates)]
+        cmd = g.move_rapid(**coordinates)
     elif move_type == 1:
-        return [g.move(**coordinates)]
+        cmd = g.move(**coordinates)
     else:
         raise ValueError("Couldn't match G command: {!r}".format(line))
+    logger.debug("Scaled line {!r} by ({}, {}, {}) to {!r}".format(line, x_scale, y_scale, z_scale, cmd))
+    return [cmd]
 
 
 PROCESS_ORDER = [  # functions to use and the order to use them in
@@ -212,7 +218,7 @@ def get_max_y(lines):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
 
     import argparse
     parser = argparse.ArgumentParser()
@@ -249,20 +255,22 @@ if __name__ == "__main__":
         pen = g.Pen(PEN_LEVEL, args.down_pos, get_pause(args.down_pos), get_pause(args.down_pos))
     
     if args.scale is not None:
-        PROCESS_ORDER.append(lambda l: scale(l, args.scale, args.scale))
+        PROCESS_ORDER.insert(-1, lambda l: scale(l, args.scale, args.scale, args.scale))
 
     # modify gcode
     content = args.infile.read().splitlines()  # gcode as a list where each element is a line
     new_lines = []  # where the new modified code will be put
 
-    for line in content:
+    for i, line in enumerate(content):
         # run through stateless single-line processors
+        logger.debug("On input line {}: {!r}".format(i, line))
         inputs = [line]
         for step in PROCESS_ORDER:
             for l in inputs:
                 outputs = [result for result in step(l)]
             inputs = outputs
         [new_lines.append(output) for output in outputs]
+        # import pdb; pdb.set_trace()
 
     HEADER = [  # commands to add at the beginning of the file
         "G54",
