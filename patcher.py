@@ -10,6 +10,7 @@ TODO: spec out switching to a stateful char-by-char patcher ala GRBL
 import argparse
 import logging
 import re
+import os
 
 import gcode as g
 
@@ -226,21 +227,42 @@ if __name__ == "__main__":
     pen_group.add_argument('-p', '--pen', type=str, choices=pens.keys(),
         help='pen preset to use'.format())
     pen_group.add_argument('-d', '--down-pos', type=int, help='Manually set a down position')
-    parser.add_argument('infile', type=argparse.FileType('r'),
-        help='input file (use `-` for stdin)')
-    parser.add_argument('outfile', type=argparse.FileType('w'),
-        help='output file (use `-` for stdout)')
+    parser.add_argument('infile', type=str,
+        help='input file')
+    parser.add_argument('out', type=str,
+        help='output path')
     parser.add_argument('-a', '--advance', action='store_true',
         help='reset coordinates after printing, useful for continuous printing')
     parser.add_argument('-m', '--margin', type=float,
         help='y distance to move after print (default is {}, ignored if advance is False)'.format(MARGIN))
-    parser.add_argument('-s', '--scale', type=float, help="Scale gcode coordinates.")
+    parser.add_argument('-s', '--scale', type=float, help="Scale gcode coordinates")
+    parser.add_argument('-f', '--feed', type=int, help="Set feed rate")
     args = parser.parse_args()
+
+    # deal with in and out paths
+    # Use infile name if out is a directory, ala `mv`, but replace extension
+    infile = args.infile
+    if not os.path.exists(infile):
+        parser.error("file does not exist")
+    infile_name, infile_ext = os.path.splitext(os.path.split(infile)[1])
+
+    out = args.out
+    if os.path.isdir(out):
+        # if a directory is given, use the input filename and extension
+        outpath = out
+        outfile_ext = infile_ext
+        outfile_name = infile_name
+        outfile = os.path.join(outpath, outfile_name + outfile_ext)
+    else:
+        outfile = out
+        outfile_name, outfile_ext = os.path.splitext(outfile)
 
     if args.margin is not None:
         MARGIN = args.margin
     if args.advance is not None:
         ADVANCE = args.advance
+    if args.feed is not None:
+        FEED_RATE = args.feed
 
     # set pen
     if args.pen is not None:
@@ -258,7 +280,8 @@ if __name__ == "__main__":
         PROCESS_ORDER.insert(-1, lambda l: scale(l, args.scale, args.scale, args.scale))
 
     # modify gcode
-    content = args.infile.read().splitlines()  # gcode as a list where each element is a line
+    with open(infile, "r") as f:
+        content = f.read().splitlines()  # gcode as a list where each element is a line
     new_lines = []  # where the new modified code will be put
 
     for i, line in enumerate(content):
@@ -299,5 +322,6 @@ if __name__ == "__main__":
         *new_lines,
         *FOOTER
     ]
-    logger.info('Writing {} lines of gcode'.format(len(new_lines)))
-    args.outfile.write('\n'.join(new_lines)+'\n')
+    logger.info('Writing {} lines of gcode to {!r}'.format(len(new_lines), outfile))
+    with open(outfile, "w") as f:
+        f.write('\n'.join(new_lines)+'\n')
